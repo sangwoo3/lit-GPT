@@ -72,7 +72,7 @@ def main(fabric, args):
             block_size=args.block_size,
             fabric=fabric,
             train_data_dir=Path(args.train_data_dir),
-            val_data_dir=Path(args.val_data_dir),
+            val_data_dir=Path(args.val_data_dir) if args.val_data_dir else None,
             seed=(6060 + fabric.global_rank),
     )
     if val_dataloader is None:

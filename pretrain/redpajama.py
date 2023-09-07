@@ -239,6 +239,7 @@ def create_dataloader(
     datasets = []
     for prefix, _ in data_config:
         filenames = glob.glob(str(data_dir / f"{prefix}*"))
+        print(str(data_dir), prefix, filenames)
         dataset = PackedDataset(
             filenames,
             n_chunks=4,

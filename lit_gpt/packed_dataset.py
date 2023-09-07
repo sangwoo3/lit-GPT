@@ -145,9 +145,6 @@ class PackedDatasetIterator:
         self._block_idxs = []
         self._curr_idx = 0
 
-        print(self._filenames)
-        print(self._n_chunks, self._block_size)
-
         self._load_n_chunks()
 
     def _read_header(self, path):

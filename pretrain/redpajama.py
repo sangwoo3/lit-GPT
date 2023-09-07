@@ -52,7 +52,7 @@ data_config = [
     # ("c4", 15.0),
     # ("cc", 67.0),
     # ("github", 4.5),
-    ("stackexchange", 2.0),
+    # ("stackexchange", 2.0),
     # ("wikipedia", 4.5),
 ]
 

@@ -923,5 +923,4 @@ stablecode = [
 ]
 configs.extend(stablecode)
 
-
 name_to_config = {config["name"]: config for config in configs}

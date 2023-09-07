@@ -135,6 +135,8 @@ class PackedDatasetIterator:
 
         self._n_chunks = n_chunks
 
+        print(f"[packeddata] {len(filenames)}, {filenames}, {n_chunks}, {block_size}")
+
         self._dtype = None
         self._block_size = block_size
         self._n_blocks = None

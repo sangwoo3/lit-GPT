@@ -32,40 +32,40 @@ class RetNet(nn.Module):
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name_tokenizer)
 
         self.config = RetNetConfig()
-        self.config.override(self.args)
+        # self.config.override(self.args)
         self.config.vocab_size = len(self.tokenizer)
-        print(self.args)
-        print(self.config.__dict__)
+        # print(self.args)
+        # print(self.config.__dict__)
 
         self.build_model()
 
     def build_model(self):
-        if self.config.model_name == "retnet_medium":
+        if self.args.model_name == "retnet_medium":
             self.config.decoder_embed_dim = 1024
             self.config.decoder_ffn_embed_dim = 2048
             self.config.decoder_layers = 16
             self.config.decoder_retention_heads = 4
-        elif self.config.model_name == "retnet_xl":
+        elif self.args.model_name == "retnet_xl":
             self.config.decoder_embed_dim = 2048
             self.config.decoder_ffn_embed_dim = 4096
             self.config.decoder_layers = 24
             self.config.decoder_retention_heads = 8
-        elif self.config.model_name == "retnet_3b":
+        elif self.args.model_name == "retnet_3b":
             self.config.decoder_embed_dim = 2560
             self.config.decoder_ffn_embed_dim = 5120
             self.config.decoder_layers = 32
             self.config.decoder_retention_heads = 10
-        elif self.config.model_name == "retnet_7b":
+        elif self.args.model_name == "retnet_7b":
             self.config.decoder_embed_dim = 4096
             self.config.decoder_ffn_embed_dim = 8192
             self.config.decoder_layers = 32
             self.config.decoder_retention_heads = 16
-        elif self.config.model_name == "retnet_13b":
+        elif self.args.model_name == "retnet_13b":
             self.config.decoder_embed_dim = 5120
             self.config.decoder_ffn_embed_dim = 10240
             self.config.decoder_layers = 40
             self.config.decoder_retention_heads = 20
-        elif self.config.model_name == "retnet_65b":
+        elif self.args.model_name == "retnet_65b":
             self.config.decoder_embed_dim = 8192
             self.config.decoder_ffn_embed_dim = 16384
             self.config.decoder_layers = 64

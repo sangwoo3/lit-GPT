@@ -43,6 +43,7 @@ class PackedDataset(IterableDataset):
         worker_id = worker_info.id if worker_info is not None else 0
         num_shards = num_workers * self._num_processes
         shard_id = self._process_rank * num_workers + worker_id
+        print(num_workers, worker_id, num_shards, self._num_processes, shard_id)
 
         max_num_files = len(self._filenames) // num_shards * num_shards
         filenames = self._filenames[shard_id:max_num_files:num_shards]

@@ -30,7 +30,7 @@ data_config = [
     # ("c4", 15.0),
     # ("cc", 67.0),
     # ("github", 4.5),
-    ("stackexchange", 2.0),
+    # ("stackexchange", 2.0),
     # ("wikipedia", 4.5),
 ]
 
@@ -87,7 +87,7 @@ def main(fabric, args):
     t0 = time.perf_counter()
     with fabric.init_module(empty_init=True):
         model = RetNet(args)
-        # model.apply(model._init_weights)
+        model.apply(model._init_weights)
 
     fabric.print(f"Time to instantiate model: {time.perf_counter() - t0:.02f} seconds.")
     fabric.print(f"Total parameters {num_parameters(model):,}")

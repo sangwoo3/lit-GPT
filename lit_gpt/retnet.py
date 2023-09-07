@@ -37,6 +37,15 @@ class RetNet(nn.Module):
 
         self.build_model()
 
+    def _init_weights(self, module):
+        std = 0.02
+        if isinstance(module, nn.Linear):
+            module.weight.data.normal_(mean=0.0, std=std)
+            if module.bias is not None:
+                module.bias.data.zero_()
+        elif isinstance(module, nn.Embedding):
+            module.weight.data.normal_(mean=0.0, std=std)
+
     def build_model(self):
         if self.args.model_name == "retnet_medium":
             self.config.decoder_embed_dim = 1024

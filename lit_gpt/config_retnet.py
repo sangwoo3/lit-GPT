@@ -15,7 +15,7 @@ def arg_loader():
 
     # Hyper-parameters
     parser.add_argument("--learning_rate", type=float, default=3e-4)
-    parser.add_argument("--batch_size", type=int, default=128)
+    parser.add_argument("--batch_size", type=int, default=64)
     parser.add_argument("--micro_batch_size", type=int, default=4)
     parser.add_argument("--max_iters", type=int, default=25000,
                         help="num_epochs * (epoch_size // micro_batch_size) // devices")

@@ -37,6 +37,7 @@ filename_sets = {
     "stackexchange": "stackexchange/stackexchange*",
     "wikipedia": "wikipedia/wiki*",
 }
+model_name = "Llama-2-7b-hf"
 
 
 def prepare_sample(
@@ -147,8 +148,9 @@ def prepare(
     match: str = "",
 ) -> None:
     """Prepare the "Red Pajama" dataset. We assume tokenizer has been trained."""
-    with open(checkpoint_dir / "lit_config.json") as fp:
-        config = Config(**json.load(fp))
+    # with open(checkpoint_dir / "lit_config.json") as fp:
+    #     config = Config(**json.load(fp))
+    config = Config.from_name(model_name)
 
     prepare_fn = prepare_sample if sample else prepare_full
     prepare_fn(

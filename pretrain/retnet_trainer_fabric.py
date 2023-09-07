@@ -142,7 +142,7 @@ def train(fabric, state, train_dataloader, val_dataloader, speed_monitor, args):
             break
 
         # determine and set the learning rate for this iteration
-        lr = get_lr(state["iter_num"]) if args.decay_lr else args.learning_rate
+        lr = get_lr(state["iter_num"], args) if args.decay_lr else args.learning_rate
         for param_group in optimizer.param_groups:
             param_group["lr"] = lr
 

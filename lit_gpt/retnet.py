@@ -34,8 +34,6 @@ class RetNet(nn.Module):
         self.config = RetNetConfig()
         # self.config.override(self.args)
         self.config.vocab_size = len(self.tokenizer)
-        # print(self.args)
-        # print(self.config.__dict__)
 
         self.build_model()
 
@@ -71,6 +69,7 @@ class RetNet(nn.Module):
             self.config.decoder_layers = 64
             self.config.decoder_retention_heads = 32
         print(self.config.__dict__)
+        print(self.args)
 
         embed_tokens = Embedding(self.config.vocab_size, self.config.decoder_embed_dim)
         self.model = RetNetDecoder(self.config, embed_tokens=embed_tokens)

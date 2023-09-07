@@ -24,6 +24,16 @@ from lit_gpt.speed_monitor import SpeedMonitorFabric as SpeedMonitor
 from lit_gpt.speed_monitor import estimate_flops, measure_flops
 from lit_gpt.utils import chunked_cross_entropy, get_default_supported_precision, num_parameters, step_csv_logger
 
+data_config = [
+    # ("arxiv", 2.5),
+    ("book", 4.5),
+    # ("c4", 15.0),
+    # ("cc", 67.0),
+    # ("github", 4.5),
+    ("stackexchange", 2.0),
+    # ("wikipedia", 4.5),
+]
+
 
 def setup() -> None:
     args = arg_loader()

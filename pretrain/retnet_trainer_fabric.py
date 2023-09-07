@@ -120,7 +120,7 @@ def train(fabric, state, train_dataloader, val_dataloader, speed_monitor, args):
     optimizer = state["optimizer"]
 
     if val_dataloader is not None:
-        validate(fabric, model, val_dataloader)  # sanity check
+        validate(fabric, model, val_dataloader, args)  # sanity check
 
     with torch.device("meta"):
         meta_model = RetNet(args)

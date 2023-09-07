@@ -47,13 +47,13 @@ min_lr = 6e-5
 
 # Data proportions from https://arxiv.org/pdf/2302.13971.pdf Table 1
 data_config = [
-    ("arxiv", 2.5),
+    # ("arxiv", 2.5),
     ("book", 4.5),
-    ("c4", 15.0),
-    ("cc", 67.0),
-    ("github", 4.5),
+    # ("c4", 15.0),
+    # ("cc", 67.0),
+    # ("github", 4.5),
     ("stackexchange", 2.0),
-    ("wikipedia", 4.5),
+    # ("wikipedia", 4.5),
 ]
 
 hparams = {k: v for k, v in locals().items() if isinstance(v, (int, float, str)) and not k.startswith("_")}

@@ -65,6 +65,8 @@ def main(fabric, args):
     if fabric.global_rank == 0:
         args.out_dir.mkdir(parents=True, exist_ok=True)
 
+    args.lr_decay_iters = args.max_iters
+
     # config = Config.from_name(model_name)
 
     train_dataloader, val_dataloader = create_dataloaders(

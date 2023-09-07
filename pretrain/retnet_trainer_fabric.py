@@ -71,8 +71,8 @@ def main(fabric, args):
             batch_size=args.micro_batch_size,
             block_size=args.block_size,
             fabric=fabric,
-            train_data_dir=args.train_data_dir,
-            val_data_dir=args.val_data_dir,
+            train_data_dir=Path(args.train_data_dir),
+            val_data_dir=Path(args.val_data_dir),
             seed=(6060 + fabric.global_rank),
     )
     if val_dataloader is None:

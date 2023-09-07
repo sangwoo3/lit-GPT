@@ -94,14 +94,15 @@ def prepare(
     # """Prepare the "Red Pajama" dataset. We assume tokenizer has been trained."""
     # with open(checkpoint_dir / "lit_config.json") as fp:
     #     config = Config(**json.load(fp))
-    args = arg_loader()
+    # args = arg_loader()
+    block_size = 2048
 
     prepare_fn = prepare_sample  # if sample else prepare_full
     prepare_fn(
             source_path=source_path,
             checkpoint_dir=checkpoint_dir,
             destination_path=destination_path,
-            chunk_size=(args.block_size + 1) * 1024,  # block size + 1 for causal, 1024 blocks
+            chunk_size=(block_size + 1) * 1024,  # block size + 1 for causal, 1024 blocks
             match=match,
     )
 

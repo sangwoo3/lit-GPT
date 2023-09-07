@@ -41,7 +41,7 @@ filename_sets = {
 
 
 def prepare_sample(
-    source_path: Path, checkpoint_dir: Path, destination_path: Path, chunk_size: int, match: str = ""
+        source_path: Path, checkpoint_dir: Path, destination_path: Path, chunk_size: int, match: str = ""
 ) -> None:
     """Prepare the "Red Pajama" dataset using the original tokenizer."""
     destination_path.mkdir(parents=True, exist_ok=True)
@@ -56,21 +56,21 @@ def prepare_sample(
 
         if not filepath.is_file():
             raise RuntimeError(
-                f"Input file not found at {filepath}. \nMake sure you download the data, e.g. wget -i"
-                " https://data.together.xyz/redpajama-data-1T/v1.0.0/urls.txt or through"
-                " \nhttps://huggingface.co/datasets/togethercomputer/RedPajama-Data-1T"
-                " \nhttps://huggingface.co/datasets/togethercomputer/RedPajama-Data-1T-Sample \n"
+                    f"Input file not found at {filepath}. \nMake sure you download the data, e.g. wget -i"
+                    " https://data.together.xyz/redpajama-data-1T/v1.0.0/urls.txt or through"
+                    " \nhttps://huggingface.co/datasets/togethercomputer/RedPajama-Data-1T"
+                    " \nhttps://huggingface.co/datasets/togethercomputer/RedPajama-Data-1T-Sample \n"
             )
 
         prefix, _ = os.path.splitext(name)
 
         builder = packed_dataset.PackedDatasetBuilder(
-            outdir=destination_path,
-            prefix=prefix,
-            chunk_size=chunk_size,
-            sep_token=tokenizer.eos_id,
-            dtype="auto",
-            vocab_size=tokenizer.vocab_size,
+                outdir=destination_path,
+                prefix=prefix,
+                chunk_size=chunk_size,
+                sep_token=tokenizer.eos_id,
+                dtype="auto",
+                vocab_size=tokenizer.vocab_size,
         )
 
         print(f"Processing {name}")
@@ -83,12 +83,13 @@ def prepare_sample(
 
         builder.write_reminder()
 
+
 def prepare(
-    source_path: Path = Path("data/RedPajama-Data-1T-Sample"),
-    checkpoint_dir: Path = Path("checkpoints/stabilityai/stablelm-base-alpha-3b"),
-    destination_path: Path = Path("data/redpajama_sample"),
-    sample: bool = True,
-    match: str = "",
+        source_path: Path = Path("data/RedPajama-Data-1T-Sample"),
+        checkpoint_dir: Path = Path("checkpoints/stabilityai/stablelm-base-alpha-3b"),
+        destination_path: Path = Path("data/redpajama_sample"),
+        sample: bool = True,
+        match: str = "",
 ) -> None:
     # """Prepare the "Red Pajama" dataset. We assume tokenizer has been trained."""
     # with open(checkpoint_dir / "lit_config.json") as fp:
@@ -97,11 +98,11 @@ def prepare(
 
     prepare_fn = prepare_sample  # if sample else prepare_full
     prepare_fn(
-        source_path=source_path,
-        checkpoint_dir=checkpoint_dir,
-        destination_path=destination_path,
-        chunk_size=(args.block_size + 1) * 1024,  # block size + 1 for causal, 1024 blocks
-        match=match,
+            source_path=source_path,
+            checkpoint_dir=checkpoint_dir,
+            destination_path=destination_path,
+            chunk_size=(args.block_size + 1) * 1024,  # block size + 1 for causal, 1024 blocks
+            match=match,
     )
 
 

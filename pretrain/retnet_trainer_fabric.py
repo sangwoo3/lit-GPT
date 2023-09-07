@@ -101,11 +101,12 @@ def main(fabric, args):
 
     state = {"model": model, "optimizer": optimizer, "hparams": model.config, "iter_num": 0, "step_count": 0}
 
+    resume_ckpt = None
     if args.resume is True:
-        resume = sorted(args.out_dir.glob("*.pth"))[-1]
-    if resume:
-        fabric.print(f"Resuming training from {resume}")
-        fabric.load(resume, state)
+        resume_ckpt = sorted(args.out_dir.glob("*.pth"))[-1]
+    if resume_ckpt:
+        fabric.print(f"Resuming training from {resume_ckpt}")
+        fabric.load(resume_ckpt, state)
 
     train_time = time.perf_counter()
     train(fabric, state, train_dataloader, val_dataloader, speed_monitor, args)

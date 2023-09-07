@@ -247,6 +247,7 @@ def create_dataloader(
             seed=seed,
             num_processes=fabric.world_size,
             process_rank=fabric.global_rank,
+            wrap=True,
         )
         datasets.append(dataset)
 

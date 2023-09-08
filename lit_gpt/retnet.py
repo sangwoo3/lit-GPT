@@ -82,8 +82,8 @@ class RetNet(nn.Module):
         self.config.n_embd = self.config.decoder_embed_dim
 
         # FSDP - forced
-        self.config.checkpoint_activations = True
-        self.config.fsdp = True
+        # self.config.checkpoint_activations = True
+        # self.config.fsdp = True
         print(self.config.__dict__)
 
         embed_tokens = Embedding(self.config.vocab_size, self.config.decoder_embed_dim)

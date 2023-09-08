@@ -242,7 +242,7 @@ def create_dataloader(
         print(str(data_dir), prefix, filenames)
         dataset = PackedDataset(
             filenames,
-            n_chunks=4,
+            n_chunks=1,
             block_size=block_size,
             shuffle=shuffle,
             seed=seed,

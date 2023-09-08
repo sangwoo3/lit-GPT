@@ -220,7 +220,7 @@ def create_dataloader(
         filenames = glob.glob(str(data_dir / f"{prefix}*"))
         dataset = PackedDataset(
                 filenames,
-                n_chunks=4,
+                n_chunks=1,
                 block_size=block_size,
                 shuffle=shuffle,
                 seed=seed,

@@ -20,7 +20,7 @@ from lit_gpt.speed_monitor import SpeedMonitorFabric as SpeedMonitor
 from lit_gpt.speed_monitor import estimate_flops, measure_flops
 from lit_gpt.utils import chunked_cross_entropy, get_default_supported_precision, num_parameters, step_csv_logger
 
-model_name = "pythia-410m"
+model_name = "pythia-2.8b"
 name = "redpajama"
 out_dir = Path("out") / name
 save_interval = 1000

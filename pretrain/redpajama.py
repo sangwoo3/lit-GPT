@@ -113,6 +113,7 @@ def main(fabric, train_data_dir, val_data_dir, resume):
     with fabric.init_module(empty_init=True):
         model = GPT(config)
         model.apply(model._init_weights)
+        print(model)
 
     fabric.print(f"Time to instantiate model: {time.perf_counter() - t0:.02f} seconds.")
     fabric.print(f"Total parameters {num_parameters(model):,}")

@@ -44,8 +44,8 @@ def setup() -> None:
 
     if args.devices > 1:
         strategy = FSDPStrategy(
-                # auto_wrap_policy={RetNetDecoderLayer},
-                # activation_checkpointing_policy={RetNetDecoderLayer},
+                auto_wrap_policy={RetNetDecoderLayer},
+                activation_checkpointing_policy={RetNetDecoderLayer},
                 state_dict_type="full",
                 limit_all_gathers=True,
                 cpu_offload=False,

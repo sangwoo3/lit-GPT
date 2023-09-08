@@ -18,7 +18,7 @@ sys.path.append(str(wd))
 
 from lit_gpt.config_retnet import arg_loader
 from lit_gpt.retnet import RetNet
-from torchscale.architecture.retnet import DecoderLayer as RetNetDecoderLayer
+from torchscale.architecture.retnet import DecoderLayer
 from lit_gpt.packed_dataset import CombinedDataset, PackedDataset
 from lit_gpt.speed_monitor import SpeedMonitorFabric as SpeedMonitor
 from lit_gpt.speed_monitor import estimate_flops, measure_flops
@@ -44,8 +44,8 @@ def setup() -> None:
 
     if args.devices > 1:
         strategy = FSDPStrategy(
-                auto_wrap_policy={RetNetDecoderLayer},
-                activation_checkpointing_policy={RetNetDecoderLayer},
+                auto_wrap_policy={DecoderLayer},
+                activation_checkpointing_policy={DecoderLayer},
                 state_dict_type="full",
                 limit_all_gathers=True,
                 cpu_offload=False,

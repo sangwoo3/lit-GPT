@@ -191,6 +191,11 @@ class DecoderLayer(nn.Module):
     def residual_connection(self, x, residual):
         return residual * self.alpha + x
 
+    def reset_parameters(self):
+        for layer in self.children():
+            if hasattr(layer, 'reset_parameters'):
+                layer.reset_parameters()
+
     def forward(
             self,
             x,
@@ -457,3 +462,8 @@ class RetNetDecoder(nn.Module):
 
     def output_layer(self, features):
         return self.output_projection(features)
+
+    def reset_parameters(self):
+        for layer in self.children():
+            if hasattr(layer, 'reset_parameters'):
+                layer.reset_parameters()

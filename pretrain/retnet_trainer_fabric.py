@@ -54,7 +54,13 @@ def setup() -> None:
         strategy = "auto"
 
     logger = step_csv_logger("out", args.exp_name, flush_logs_every_n_steps=args.log_interval)
-    fabric = L.Fabric(devices=args.devices, strategy=strategy, precision=precision, loggers=logger, accelerator='gpu')
+    fabric = L.Fabric(devices=args.devices,
+                      strategy=strategy,
+                      precision=precision,
+                      loggers=logger,
+                      accelerator='gpu',
+                      num_nodes=args.num_nodes,
+                      )
     fabric.launch(main, args)
 
 

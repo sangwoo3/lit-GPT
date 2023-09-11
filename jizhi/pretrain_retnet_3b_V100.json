@@ -1,0 +1,17 @@
+{
+    "Token":"QttsISznR9raioKcGvVlNQ",
+    "business_flag":"Taiji_HYAide_LONG_CQ_V100L",
+    "mount_ceph_business_flag":"TencnetChat_ChongQing",
+    "task_flag":"Pretrain_RetNet_3B_test",
+    "model_local_file_path":"/apdcephfs_cq4/share_2942043/user/swcho/code/lit-GPT",
+    "host_num":1,
+    "host_gpu_num":8,
+    "GPUName":"V100",
+    "cuda_version":"11.0",
+    "is_elasticity":false,
+    "exec_start_in_all_mpi_pods":true,
+    "enable_rdma":false,
+    "rdma_in_same_module":false,
+    "start_cmd":"bash jizhi/pretrain_retnet_3b_V100.sh",
+    "image_full_name":"mirrors.tencent.com/seattle-nlu/litgpt:v6.1"
+}

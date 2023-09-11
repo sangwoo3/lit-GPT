@@ -12,6 +12,6 @@
     "exec_start_in_all_mpi_pods":true,
     "enable_rdma":false,
     "rdma_in_same_module":false,
-    "start_cmd":"bash jizhi/pretrain_retnet_3b_V100.sh",
+    "start_cmd":"bash jizhi/pretrain_retnet_V100.sh",
     "image_full_name":"mirrors.tencent.com/seattle-nlu/litgpt:v6.1"
 }

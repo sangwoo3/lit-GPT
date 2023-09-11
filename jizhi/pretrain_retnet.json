@@ -13,5 +13,11 @@
     "enable_rdma":true,
     "rdma_in_same_module":false,
     "start_cmd":"bash jizhi/pretrain_retnet.sh",
-    "image_full_name":"mirrors.tencent.com/ai-lab-seattle/retnet:v911"
+    "image_full_name":"mirrors.tencent.com/ai-lab-seattle/retnet:v911",
+    "envs": {
+      "HUNYUAN_TASK_CATEGORY": "LLM",
+      "HUNYUAN_TASK_MODEL_TYPE": "PRETRAIN",
+      "HUNYUAN_TASK_DOMAIN": "NLP",
+      "HUNYUAN_TASK_START_MODEL_TYPE": "llama2"
+    }
 }

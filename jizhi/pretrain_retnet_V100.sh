@@ -12,13 +12,14 @@ export NCCL_IB_CUDA_SUPPORT=1
 #########################
 #  Project Related args
 #########################
-PROJ_DIR=/apdcephfs_cq4/share_2942043/user/swcho
+PROJ_DIR=/apdcephfs_cq3/share_1603164/user/swcho/
 
 CODE_DIR=${PROJ_DIR}/code/lit-GPT
 DATA_PATH=${PROJ_DIR}/data
 OUTPUT_DIR=${PROJ_DIR}/output
 HF_DIR=${PROJ_DIR}/huggingface_models
 
+EXP_NAME="retnet_3b_redpajama_sample"
 
 GPUS_PER_NODE=8
 export MASTER_ADDR=${CHIEF_IP}
@@ -34,9 +35,9 @@ DATA_ARGS="--train_data_dir ${DATA_PATH}/lit-redpajama-sample \
 --out_dir ${OUTPUT_DIR} \
 --hf_dir ${HF_DIR}"
 
-TRAIN_ARGS="--exp_name retnet_3b_redpajama_sample \
+TRAIN_ARGS="--exp_name ${EXP_NAME} \
 --model_name retnet_3b \
---save_interval 5000 \
+--save_interval 1000 \
 --eval_interval 1000 \
 --eval_iters 1 \
 --log_interval 10 \
@@ -53,4 +54,4 @@ echo ${ALL_ARGS}
 CMD="python ${CODE_DIR}/pretrain/retnet_trainer_fabric.py ${ALL_ARGS}"
 echo $CMD
 
-eval ${CMD} 2>&1 | tee -a ${OUTPUT_DIR}/log_node_${INDEX}.txt
+eval ${CMD} 2>&1 | tee -a ${OUTPUT_DIR}/${EXP_NAME}/log_node_${INDEX}.txt

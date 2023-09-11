@@ -10,6 +10,8 @@ DATA_PATH=${PROJ_DIR}/data
 OUTPUT_DIR=${PROJ_DIR}/output
 HF_DIR=${PROJ_DIR}/huggingface_models
 
+EXP_NAME="retnet_3b_redpajama_sample"
+
 #########################
 #  Debug args
 #########################
@@ -18,7 +20,7 @@ export PYTORCH_JIT=0
 #  NCCL and CUDA args
 #########################
 export CUDA_DEVICE_MAX_CONNECTIONS=1
-NET_TYPE="high"
+NET_TYPE="low"
 if [[ "${NET_TYPE}" = "low" ]]; then
     export NCCL_SOCKET_IFNAME=eth1
     export NCCL_IB_GID_INDEX=3
@@ -61,12 +63,12 @@ DATA_ARGS="--train_data_dir ${DATA_PATH}/lit-redpajama-sample \
 --out_dir ${OUTPUT_DIR} \
 --hf_dir ${HF_DIR}"
 
-TRAIN_ARGS="--exp_name retnet_3b_redpajama_sample \
+TRAIN_ARGS="--exp_name ${EXP_NAME} \
 --model_name retnet_3b \
---save_interval 5000 \
+--save_interval 1000 \
 --eval_interval 1000 \
 --eval_iters 1 \
---log_interval 10 \
+--log_interval 2 \
 --micro_batch_size 2 \
 --batch_size 2 \
 --devices ${GPUS_PER_NODE} \
@@ -80,4 +82,4 @@ echo ${ALL_ARGS}
 CMD="python ${CODE_DIR}/pretrain/retnet_trainer_fabric.py ${ALL_ARGS}"
 echo $CMD
 
-eval ${CMD} 2>&1 | tee -a ${OUTPUT_DIR}/log_node_${INDEX}.txt
+eval ${CMD} 2>&1 | tee -a ${OUTPUT_DIR}/${EXP_NAME}/log_node_${INDEX}.txt

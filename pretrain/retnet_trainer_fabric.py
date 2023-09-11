@@ -67,7 +67,7 @@ def setup() -> None:
 def main(fabric, args):
     speed_monitor = SpeedMonitor(fabric, window_size=50, time_unit="seconds")
 
-    args.out_dir = Path("out") / args.exp_name
+    args.out_dir = Path(args.out_dir) / args.exp_name
     if fabric.global_rank == 0:
         args.out_dir.mkdir(parents=True, exist_ok=True)
 

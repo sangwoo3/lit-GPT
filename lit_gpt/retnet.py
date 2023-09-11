@@ -1,3 +1,4 @@
+import os
 import torch
 import torch.nn as nn
 from typing import Optional, Union, Tuple
@@ -28,7 +29,10 @@ class RetNet(nn.Module):
         super().__init__()
         self.model = None
         self.args = args
-        self.model_name_tokenizer = 'meta-llama/Llama-2-7b-hf'
+        _hf_dir = 'meta-llama/Llama-2-7b-hf'
+        if args.hf_dir is not None:
+            _hf_dir = os.path.join(args.hf_dir, 'meta-llama/Llama-2-7b-hf')
+        self.model_name_tokenizer = _hf_dir
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name_tokenizer)
 
         self.config = RetNetConfig()

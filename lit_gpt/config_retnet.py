@@ -34,6 +34,8 @@ def arg_loader():
 
     parser.add_argument("--train_data_dir", type=str)
     parser.add_argument("--val_data_dir", type=str)
+    parser.add_argument("--out_dir", type=str, default="out")
+    parser.add_argument("--hf_dir", type=str)
     parser.add_argument("--num_nodes", type=int, default=1, help="number of nodes")
 
     parser.add_argument("--block_size", type=int, default=2048)

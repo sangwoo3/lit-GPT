@@ -29,11 +29,8 @@ class RetNet(nn.Module):
         super().__init__()
         self.model = None
         self.args = args
-        _hf_dir = 'meta-llama/Llama-2-7b-hf'
-        if args.hf_dir is not None:
-            _hf_dir = os.path.join(args.hf_dir, 'meta-llama/Llama-2-7b-hf')
-        self.model_name_tokenizer = _hf_dir
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name_tokenizer)
+        self.tokenizer_dir = 'meta-llama/Llama-2-7b-hf' if args.hf_dir is None else args.hf_dir
+        self.tokenizer = AutoTokenizer.from_pretrained(self.tokenizer_dir)
 
         self.config = RetNetConfig()
         # self.config.override(self.args)

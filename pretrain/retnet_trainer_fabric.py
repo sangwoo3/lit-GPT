@@ -3,7 +3,7 @@ import math
 import sys
 import time
 from pathlib import Path
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple
 
 import lightning as L
 import torch

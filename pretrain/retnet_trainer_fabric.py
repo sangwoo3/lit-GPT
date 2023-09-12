@@ -35,7 +35,7 @@ data_config = [
 ]
 
 
-def setup() -> None:
+def setup():
     args = arg_loader()
     precision = args.precision or get_default_supported_precision(training=True)
 

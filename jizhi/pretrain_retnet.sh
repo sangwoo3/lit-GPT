@@ -81,7 +81,7 @@ ALL_ARGS="${TRAIN_ARGS} \
 
 echo ${ALL_ARGS}
 
-CMD="python ${CODE_DIR}/pretrain/retnet_trainer_fabric.py ${ALL_ARGS}"
+CMD="python3 ${CODE_DIR}/pretrain/retnet_trainer_fabric.py ${ALL_ARGS}"
 echo $CMD
 
 eval ${CMD} 2>&1 | tee -a ${OUTPUT_DIR}/${EXP_NAME}/log_node_${INDEX}.txt

@@ -99,9 +99,8 @@ def main(fabric, args):
 
     _time = time.perf_counter() - t0
 
-
-    fabric.print("Time to instantiate model: {:.02f} seconds.".format(_time))
-    # fabric.print(f"Time to instantiate model: {time.perf_counter() - t0:.02f} seconds.")
+    # fabric.print("Time to instantiate model: {:.02f} seconds.".format(_time))
+    fabric.print(f"Time to instantiate model: {time.perf_counter() - t0:.02f} seconds.")
     fabric.print(f"Total parameters {num_parameters(model):,}")
 
     model = fabric.setup(model)

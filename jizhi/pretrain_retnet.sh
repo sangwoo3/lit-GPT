@@ -12,6 +12,8 @@ HF_DIR=${PROJ_DIR}/huggingface_models
 
 EXP_NAME="retnet_3b_redpajama_sample"
 
+mkdir -p ${OUTPUT_DIR}/${EXP_NAME}
+
 #########################
 #  Debug args
 #########################

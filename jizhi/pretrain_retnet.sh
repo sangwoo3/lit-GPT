@@ -3,7 +3,7 @@
 #########################
 #  Project Related args
 #########################
-PROJ_DIR=/apdcephfs_cq3/share_1603164/user/swcho
+PROJ_DIR=/apdcephfs/share_300000800/user/swcho
 
 CODE_DIR=${PROJ_DIR}/code/lit-GPT
 DATA_PATH=${PROJ_DIR}/data

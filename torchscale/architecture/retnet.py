@@ -7,7 +7,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from fairscale.nn import checkpoint_wrapper, wrap
+# from fairscale.nn import checkpoint_wrapper, wrap
 
 from torchscale.architecture.utils import init_bert_params
 from torchscale.component.droppath import DropPath
@@ -357,10 +357,10 @@ class RetNetDecoder(nn.Module):
                 depth,
                 is_moe_layer=is_moe_layer,
         )
-        if args.checkpoint_activations:
-            layer = checkpoint_wrapper(layer)
-        if args.fsdp:
-            layer = wrap(layer)
+        # if args.checkpoint_activations:
+        #     layer = checkpoint_wrapper(layer)
+        # if args.fsdp:
+        #     layer = wrap(layer)
         return layer
 
     def forward_embedding(

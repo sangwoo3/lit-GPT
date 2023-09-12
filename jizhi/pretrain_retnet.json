@@ -13,7 +13,7 @@
     "enable_rdma":false,
     "rdma_in_same_module":false,
     "start_cmd":"bash /apdcephfs/share_300000800/user/swcho/code/lit-GPT/jizhi/pretrain_retnet.sh",
-    "image_full_name":"mirrors.tencent.com/ai-lab-seattle/retnet:v911",
+    "image_full_name":"mirrors.tencent.com/seattle-nlu/litgpt:v6.1",
     "envs": {
       "HUNYUAN_TASK_CATEGORY": "LLM",
       "HUNYUAN_TASK_MODEL_TYPE": "PRETRAIN",

@@ -83,3 +83,6 @@ CMD="python ${CODE_DIR}/pretrain/retnet_trainer_fabric.py ${ALL_ARGS}"
 echo $CMD
 
 eval ${CMD} 2>&1 | tee -a ${OUTPUT_DIR}/${EXP_NAME}/log_node_${INDEX}.txt
+
+# mirrors.tencent.com/seattle-nlu/litgpt:v6.1
+# mirrors.tencent.com/ai-lab-seattle/retnet:v911

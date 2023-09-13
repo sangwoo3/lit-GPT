@@ -50,7 +50,7 @@ checkpoint_path = 'out/retnet_3b_redpajama_sample/iter-000199-ckpt.pth'
 
 t0 = time.perf_counter()
 with lazy_load(checkpoint_path) as checkpoint:
-    fabric.print(checkpoint)
+    fabric.print(checkpoint.keys())
     model.load_state_dict(checkpoint.get("model", checkpoint), strict=True)
 fabric.print(f"Time to load the model weights: {time.perf_counter() - t0:.02f} seconds.", file=sys.stderr)
 

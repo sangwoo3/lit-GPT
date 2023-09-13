@@ -26,7 +26,7 @@ filenames_sample = [
     # "cc_2023-06_sample.jsonl",
     # "github_sample.jsonl",
     "stackexchange_sample.jsonl",
-    # "wikipedia_sample.jsonl",
+    "wikipedia_sample.jsonl",
 ]
 
 filename_sets = {

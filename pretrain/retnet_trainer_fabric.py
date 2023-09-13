@@ -226,6 +226,7 @@ def create_dataloader(
     datasets = []
     for prefix, _ in data_config:
         filenames = glob.glob(str(data_dir / f"{prefix}*"))
+        fabric.print(f"{filenames}, {data_dir}, {data_config}, {prefix}")
         dataset = PackedDataset(
                 filenames,
                 n_chunks=1,

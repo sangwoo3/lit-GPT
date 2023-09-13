@@ -22,7 +22,7 @@ export PYTORCH_JIT=0
 #  NCCL and CUDA args
 #########################
 export CUDA_DEVICE_MAX_CONNECTIONS=1
-NET_TYPE="low"
+NET_TYPE="high"
 if [[ "${NET_TYPE}" = "low" ]]; then
     export NCCL_SOCKET_IFNAME=eth1
     export NCCL_IB_GID_INDEX=3

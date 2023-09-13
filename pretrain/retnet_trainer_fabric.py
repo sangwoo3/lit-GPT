@@ -30,7 +30,7 @@ data_config = [
     # ("c4", 15.0),
     # ("cc", 67.0),
     # ("github", 4.5),
-    # ("stackexchange", 2.0),
+    ("stackexchange", 2.0),
     # ("wikipedia", 4.5),
 ]
 
@@ -91,7 +91,7 @@ def main(fabric, args):
     fabric.seed_everything(6060)  # same seed for every process to init model (FSDP)
 
     # fabric.print(f"Loading model with {config.__dict__}")
-    # fabric.print(args)
+    fabric.print(args)
     t0 = time.perf_counter()
     with fabric.init_module(empty_init=True):
         model = RetNet(args)
@@ -99,7 +99,6 @@ def main(fabric, args):
 
     _time = time.perf_counter() - t0
 
-    # fabric.print("Time to instantiate model: {:.02f} seconds.".format(_time))
     fabric.print(f"Time to instantiate model: {time.perf_counter() - t0:.02f} seconds.")
     fabric.print(f"Total parameters {num_parameters(model):,}")
 

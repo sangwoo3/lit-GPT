@@ -31,7 +31,7 @@ data_config = [
     # ("cc", 67.0),
     # ("github", 4.5),
     ("stackexchange", 2.0),
-    # ("wikipedia", 4.5),
+    ("wikipedia", 4.5),
 ]
 
 

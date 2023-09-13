@@ -67,12 +67,12 @@ DATA_ARGS="--train_data_dir ${DATA_PATH}/lit-redpajama-sample \
 
 TRAIN_ARGS="--exp_name ${EXP_NAME} \
 --model_name retnet_3b \
---save_interval 1000 \
---eval_interval 1000 \
+--save_interval 100 \
+--eval_interval 100 \
 --eval_iters 1 \
 --log_interval 2 \
---micro_batch_size 2 \
---batch_size 2 \
+--micro_batch_size 4 \
+--batch_size 4 \
 --devices ${GPUS_PER_NODE} \
 --num_nodes ${HOST_NUM}"
 

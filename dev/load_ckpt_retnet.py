@@ -5,15 +5,15 @@ from pathlib import Path
 import lightning as L
 from lightning.fabric.strategies import FSDPStrategy
 
+# support running without installing as a package
+wd = Path(__file__).parent.parent.resolve()
+sys.path.append(str(wd))
+
 from lit_gpt.config_retnet import arg_loader
 from lit_gpt.retnet import RetNet
 from torchscale.architecture.retnet import DecoderLayer
 from lit_gpt.utils import get_default_supported_precision, step_csv_logger, lazy_load
 
-
-# support running without installing as a package
-wd = Path(__file__).parent.parent.resolve()
-sys.path.append(str(wd))
 
 args = arg_loader()
 precision = args.precision or get_default_supported_precision(training=True)

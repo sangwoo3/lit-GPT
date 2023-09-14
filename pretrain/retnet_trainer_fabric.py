@@ -81,6 +81,10 @@ def setup():
 def main(fabric, args):
     if fabric.global_rank == 0:
         args.out_dir.mkdir(parents=True, exist_ok=True)
+        log_dir = args.out_dir / "logs"
+        ckpt_dir = args.out_dir / "ckpt"
+        log_dir.mkdir(parents=True, exist_ok=True)
+        ckpt_dir.mkdir(parents=True, exist_ok=True)
 
     fabric.logger.experiment.add_text(
             "hyperparameters",
@@ -222,6 +226,7 @@ def train(fabric, state, train_dataloader, val_dataloader, speed_monitor, args):
             fabric.log("val/iter_time", t1 * 1000, state['iter_num'])
             fabric.barrier()
         if not is_accumulating and state["step_count"] % args.save_interval == 0:
+            args.out_dir / "ckpt"
             checkpoint_path = args.out_dir / "ckpt" / f"iter-{state['iter_num']:06d}-ckpt.pth"
             fabric.print(f"Saving checkpoint to {str(checkpoint_path)!r}")
             fabric.save(checkpoint_path, state)

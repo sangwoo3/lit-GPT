@@ -82,10 +82,10 @@ def setup():
 def main(fabric, args):
     if fabric.global_rank == 0:
         args.out_dir.mkdir(parents=True, exist_ok=True)
-        log_dir = args.out_dir / "logs"
-        ckpt_dir = args.out_dir / "ckpt"
-        log_dir.mkdir(parents=True, exist_ok=True)
-        ckpt_dir.mkdir(parents=True, exist_ok=True)
+        args.log_dir = args.out_dir / "logs"
+        args.ckpt_dir = args.out_dir / "ckpt"
+        args.log_dir.mkdir(parents=True, exist_ok=True)
+        args.ckpt_dir.mkdir(parents=True, exist_ok=True)
 
     fabric.logger.experiment.add_text(
             "hyperparameters",
@@ -135,9 +135,11 @@ def main(fabric, args):
 
     resume_ckpt = None
     if args.resume is True:
-        resume_ckpt = sorted(args.out_dir.glob("*.pth"))[-1]
+        resume_ckpt = sorted(args.ckpt_dir.glob("*.pth"))[-1]
     if resume_ckpt:
         fabric.print(f"Resuming training from {resume_ckpt}")
+        if not isinstance(resume_ckpt, str):
+            resume_ckpt = str(resume_ckpt)
         fabric.load(resume_ckpt, state)
 
     train_time = time.perf_counter()
@@ -208,8 +210,9 @@ def train(fabric, state, train_dataloader, val_dataloader, speed_monitor, args):
         )
         if state["iter_num"] % args.log_interval == 0:
             fabric.print(
-                    f"iter {state['iter_num']} step {state['step_count']}: loss {loss.item():.4f}, iter time:"
-                    f" {(t1 - iter_t0) * 1000:.2f}ms{' (optimizer.step)' if not is_accumulating else ''}"
+                    f"[iter {state['iter_num']} step {state['step_count']}]: loss {loss.item():.4f}, "
+                    f"lr {lr}, iter time: {(t1 - iter_t0) * 1000:.2f}ms "
+                    f"{'(optimizer.step)' if not is_accumulating else ''}"
             )
             fabric.log("train/loss", loss.item(), state['iter_num'])
             fabric.log("train/ppl", ppl(loss).item(), state['iter_num'])
@@ -220,7 +223,7 @@ def train(fabric, state, train_dataloader, val_dataloader, speed_monitor, args):
             val_loss, val_ppl = validate(fabric, model, val_dataloader, args)
             t1 = time.perf_counter() - t0
             speed_monitor.eval_end(t1)
-            fabric.print(f"step {state['iter_num']}: val loss {val_loss:.4f}, val ppl {ppl:.4E}, val time:"
+            fabric.print(f"step {state['iter_num']}: val loss {val_loss:.4f}, val ppl {ppl:.4f}, val time:"
                          f" {t1 * 1000:.2f}ms")
             fabric.log("val/loss", val_loss.item(), state['iter_num'])
             fabric.log("val/ppl", val_ppl.item(), state['iter_num'])

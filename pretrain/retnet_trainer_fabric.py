@@ -61,9 +61,10 @@ def setup():
     else:
         strategy = "auto"
 
-    run_name = f"{args.exp_name}_{args.seed}_{int(time.time())}"
+    today = datetime.today().strftime("%Y-%m-%d_%H-%M-%S")
+    run_name = f"seed{args.seed}_{today}"
     logger = TensorBoardLogger(
-            root_dir=str(args.out_dir/"logs"/datetime.today().strftime("%Y-%m-%d_%H-%M-%S")),
+            root_dir=str(args.out_dir/"logs"),
             # os.path.join("logs", "fabric_logs", datetime.today().strftime("%Y-%m-%d_%H-%M-%S")),
             name=run_name
     )

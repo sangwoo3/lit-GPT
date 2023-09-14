@@ -8,15 +8,15 @@ def arg_loader():
                                                            'retnet_7b', 'retnet_13b', 'retnet_65b'],
                         default='retnet_3b')
     parser.add_argument("--exp_name", type=str, default='pile-c4-stack')
-    parser.add_argument("--save_interval", type=int, default=1000)
+    parser.add_argument("--save_interval", type=int, default=2500)
     parser.add_argument("--eval_interval", type=int, default=1000)
-    parser.add_argument("--eval_iters", type=int, default=100)
+    parser.add_argument("--eval_iters", type=int, default=1)
     parser.add_argument("--log_interval", type=int, default=1)
 
     # Hyper-parameters
     parser.add_argument("--learning_rate", type=float, default=3e-4)
-    parser.add_argument("--batch_size", type=int, default=2)
-    parser.add_argument("--micro_batch_size", type=int, default=2)
+    parser.add_argument("--batch_size", type=int, default=64)
+    parser.add_argument("--micro_batch_size", type=int, default=4)
     parser.add_argument("--max_iters", type=int, default=25000,
                         help="num_epochs * (epoch_size // micro_batch_size) // devices")
     parser.add_argument("--weight_decay", type=float, default=0.01)

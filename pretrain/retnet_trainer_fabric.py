@@ -211,7 +211,7 @@ def train(fabric, state, train_dataloader, val_dataloader, speed_monitor, args):
         if state["iter_num"] % args.log_interval == 0:
             fabric.print(
                     f"[iter {state['iter_num']} step {state['step_count']}]: loss {loss.item():.4f}, "
-                    f"lr {lr}, iter time: {(t1 - iter_t0) * 1000:.2f}ms "
+                    f"lr {lr:.10E}, iter time: {(t1 - iter_t0) * 1000:.2f}ms "
                     f"{'(optimizer.step)' if not is_accumulating else ''}"
             )
             fabric.log("train/loss", loss.item(), state['iter_num'])
@@ -230,7 +230,6 @@ def train(fabric, state, train_dataloader, val_dataloader, speed_monitor, args):
             fabric.log("val/iter_time", t1 * 1000, state['iter_num'])
             fabric.barrier()
         if not is_accumulating and state["step_count"] % args.save_interval == 0:
-            args.out_dir / "ckpt"
             checkpoint_path = args.out_dir / "ckpt" / f"iter-{state['iter_num']:06d}-ckpt.pth"
             fabric.print(f"Saving checkpoint to {str(checkpoint_path)!r}")
             fabric.save(checkpoint_path, state)

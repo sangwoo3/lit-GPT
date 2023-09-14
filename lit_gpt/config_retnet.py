@@ -9,21 +9,21 @@ def arg_loader():
                         default='retnet_3b')
     parser.add_argument("--exp_name", type=str, default='pile-c4-stack')
     parser.add_argument("--save_interval", type=int, default=2500)
-    parser.add_argument("--eval_interval", type=int, default=1000)
+    parser.add_argument("--eval_interval", type=int, default=1250)
+    parser.add_argument("--log_interval", type=int, default=160)
     parser.add_argument("--eval_iters", type=int, default=1)
-    parser.add_argument("--log_interval", type=int, default=1)
 
     # Hyper-parameters
     parser.add_argument("--learning_rate", type=float, default=3e-4)
     parser.add_argument("--batch_size", type=int, default=64)
     parser.add_argument("--micro_batch_size", type=int, default=4)
-    parser.add_argument("--max_iters", type=int, default=25000,
+    parser.add_argument("--max_iters", type=int, default=400000,
                         help="num_epochs * (epoch_size // micro_batch_size) // devices")
+    parser.add_argument("--warmup_iters", type=int, default=600, help="1.5% of 400K iterations")
     parser.add_argument("--weight_decay", type=float, default=0.01)
     parser.add_argument("--beta1", type=float, default=0.9)
     parser.add_argument("--beta2", type=float, default=0.95)
     parser.add_argument("--decay_lr", action="store_false")
-    parser.add_argument("--warmup_iters", type=int, default=375, help="1.5% of 25K iterations")
     parser.add_argument("--min_lr", type=float, default=6e-5)
     parser.add_argument("--precision", type=str)
 

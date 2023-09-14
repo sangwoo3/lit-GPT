@@ -48,6 +48,8 @@ def setup():
 
     args.lr_decay_iters = args.max_iters
 
+    args.out_dir = Path(args.out_dir) / args.exp_name
+
     if args.devices > 1:
         strategy = FSDPStrategy(
                 auto_wrap_policy={DecoderLayer},
@@ -61,7 +63,8 @@ def setup():
 
     run_name = f"{args.exp_name}_{args.seed}_{int(time.time())}"
     logger = TensorBoardLogger(
-            root_dir=os.path.join("logs", "fabric_logs", datetime.today().strftime("%Y-%m-%d_%H-%M-%S")),
+            root_dir=str(args.out_dir/"logs"/datetime.today().strftime("%Y-%m-%d_%H-%M-%S")),
+            # os.path.join("logs", "fabric_logs", datetime.today().strftime("%Y-%m-%d_%H-%M-%S")),
             name=run_name
     )
     # logger = step_csv_logger("out", args.exp_name, flush_logs_every_n_steps=args.log_interval)
@@ -76,7 +79,6 @@ def setup():
 
 
 def main(fabric, args):
-    args.out_dir = Path(args.out_dir) / args.exp_name
     if fabric.global_rank == 0:
         args.out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -220,7 +222,7 @@ def train(fabric, state, train_dataloader, val_dataloader, speed_monitor, args):
             fabric.log("val/iter_time", t1 * 1000, state['iter_num'])
             fabric.barrier()
         if not is_accumulating and state["step_count"] % args.save_interval == 0:
-            checkpoint_path = args.out_dir / f"iter-{state['iter_num']:06d}-ckpt.pth"
+            checkpoint_path = args.out_dir / "ckpt" / f"iter-{state['iter_num']:06d}-ckpt.pth"
             fabric.print(f"Saving checkpoint to {str(checkpoint_path)!r}")
             fabric.save(checkpoint_path, state)
 

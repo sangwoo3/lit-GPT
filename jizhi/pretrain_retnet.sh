@@ -73,6 +73,7 @@ TRAIN_ARGS="--exp_name ${EXP_NAME} \
 --log_interval 2 \
 --micro_batch_size 4 \
 --batch_size 4 \
+--num_nodes 2 \
 --devices ${GPUS_PER_NODE} \
 --num_nodes ${HOST_NUM}"
 

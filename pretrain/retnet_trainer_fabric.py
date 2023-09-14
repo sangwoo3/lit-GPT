@@ -33,7 +33,7 @@ data_config = [
     # ("c4", 15.0),
     # ("cc", 67.0),
     # ("github", 4.5),
-    ("stackexchange", 2.0),
+    # ("stackexchange", 2.0),
     ("wikipedia", 4.5),
 ]
 
@@ -107,6 +107,9 @@ def main(fabric, args):
         train_dataloader = fabric.setup_dataloaders(train_dataloader)
     else:
         train_dataloader, val_dataloader = fabric.setup_dataloaders(train_dataloader, val_dataloader)
+        fabric.print(f"val_dataloader len: {len(val_dataloader)}")
+    fabric.print(f"train_dataloader len: {len(train_dataloader)}")
+
 
     fabric.seed_everything(args.seed)  # same seed for every process to init model (FSDP)
 

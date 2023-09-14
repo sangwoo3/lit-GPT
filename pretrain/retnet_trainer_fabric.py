@@ -91,11 +91,13 @@ def main(fabric, args):
     fabric.seed_everything(6060)  # same seed for every process to init model (FSDP)
 
     # fabric.print(f"Loading model with {config.__dict__}")
-    fabric.print(args)
+    fabric.print(f"Training args {args}")
     t0 = time.perf_counter()
     with fabric.init_module(empty_init=True):
         model = RetNet(args)
         model.apply(model._init_weights)
+        fabric.print(f"Model configuration {model.config.__dict__}")
+        fabric.print(model.model)
 
     _time = time.perf_counter() - t0
 
@@ -191,10 +193,11 @@ def train(fabric, state, train_dataloader, val_dataloader, speed_monitor, args):
 
         if val_dataloader is not None and not is_accumulating and state["step_count"] % args.eval_interval == 0:
             t0 = time.perf_counter()
-            val_loss = validate(fabric, model, val_dataloader, args)
+            val_loss, ppl = validate(fabric, model, val_dataloader, args)
             t1 = time.perf_counter() - t0
             speed_monitor.eval_end(t1)
-            fabric.print(f"step {state['iter_num']}: val loss {val_loss:.4f}, val time: {t1 * 1000:.2f}ms")
+            fabric.print(f"step {state['iter_num']}: val loss {val_loss:.4f}, ppl {ppl:.4E}, val time:"
+                         f" {t1 * 1000:.2f}ms")
             fabric.barrier()
         if not is_accumulating and state["step_count"] % args.save_interval == 0:
             checkpoint_path = args.out_dir / f"iter-{state['iter_num']:06d}-ckpt.pth"
@@ -216,8 +219,18 @@ def validate(fabric: L.Fabric, model: torch.nn.Module, val_dataloader: DataLoade
         losses[k] = loss.item()
     out = losses.mean()
 
+    targets
+    try:
+        perplexity = torch.exp(out)
+    except OverflowError:
+        perplexity = float("inf")
+
     model.train()
-    return out
+    return out, perplexity
+
+
+def ppl(loss):
+    return math.exp(min(20, loss))
 
 
 def create_dataloader(

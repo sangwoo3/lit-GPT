@@ -80,6 +80,11 @@ def main(fabric, args):
     if fabric.global_rank == 0:
         args.out_dir.mkdir(parents=True, exist_ok=True)
 
+    fabric.logger.experiment.add_text(
+            "hyperparameters",
+            "|param|value|\n|-|-|\n%s" % ("\n".join([f"|{key}|{value}|" for key, value in vars(args).items()])),
+    )
+
     speed_monitor = SpeedMonitor(fabric, window_size=50, time_unit="seconds")
     # config = Config.from_name(model_name)
 
@@ -165,6 +170,7 @@ def train(fabric, state, train_dataloader, val_dataloader, speed_monitor, args):
         lr = get_lr(state["iter_num"], args) if args.decay_lr else args.learning_rate
         for param_group in optimizer.param_groups:
             param_group["lr"] = lr
+        fabric.log("Info/learning_rate", lr, state["iter_num"])     # optimizer.param_groups[0]["lr"]
 
         iter_t0 = time.perf_counter()
 
@@ -198,9 +204,9 @@ def train(fabric, state, train_dataloader, val_dataloader, speed_monitor, args):
                     f"iter {state['iter_num']} step {state['step_count']}: loss {loss.item():.4f}, iter time:"
                     f" {(t1 - iter_t0) * 1000:.2f}ms{' (optimizer.step)' if not is_accumulating else ''}"
             )
-            fabric.log("loss", loss.item(), state['iter_num'])
-            fabric.log("train ppl", ppl(loss).item(), state['iter_num'])
-            fabric.log("train iter time", (t1 - iter_t0) * 1000, state['iter_num'])
+            fabric.log("train/loss", loss.item(), state['iter_num'])
+            fabric.log("train/ppl", ppl(loss).item(), state['iter_num'])
+            fabric.log("train/iter_time", (t1 - iter_t0) * 1000, state['iter_num'])
 
         if val_dataloader is not None and not is_accumulating and state["step_count"] % args.eval_interval == 0:
             t0 = time.perf_counter()
@@ -209,9 +215,9 @@ def train(fabric, state, train_dataloader, val_dataloader, speed_monitor, args):
             speed_monitor.eval_end(t1)
             fabric.print(f"step {state['iter_num']}: val loss {val_loss:.4f}, val ppl {ppl:.4E}, val time:"
                          f" {t1 * 1000:.2f}ms")
-            fabric.log("val loss", val_loss.item(), state['iter_num'])
-            fabric.log("train ppl", val_ppl.item(), state['iter_num'])
-            fabric.log("val iter time", t1 * 1000, state['iter_num'])
+            fabric.log("val/loss", val_loss.item(), state['iter_num'])
+            fabric.log("val/ppl", val_ppl.item(), state['iter_num'])
+            fabric.log("val/iter_time", t1 * 1000, state['iter_num'])
             fabric.barrier()
         if not is_accumulating and state["step_count"] % args.save_interval == 0:
             checkpoint_path = args.out_dir / f"iter-{state['iter_num']:06d}-ckpt.pth"

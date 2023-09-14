@@ -85,11 +85,11 @@ class RetNet(nn.Module):
         # FSDP - forced
         # self.config.checkpoint_activations = True
         # self.config.fsdp = True
-        print(self.config.__dict__)
+        # print(self.config.__dict__)
 
         embed_tokens = Embedding(self.config.vocab_size, self.config.decoder_embed_dim)
         self.model = RetNetDecoder(self.config, embed_tokens=embed_tokens)
-        print(self.model)
+        # print(self.model)
 
     def max_positions(self):
         return self.config.max_target_positions

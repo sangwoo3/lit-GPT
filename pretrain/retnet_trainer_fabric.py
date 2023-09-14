@@ -1,7 +1,9 @@
+import os
 import glob
 import math
 import sys
 import time
+from datetime import datetime
 from pathlib import Path
 from typing import Optional, Tuple
 
@@ -23,6 +25,7 @@ from lit_gpt.packed_dataset import CombinedDataset, PackedDataset
 from lit_gpt.speed_monitor import SpeedMonitorFabric as SpeedMonitor
 from lit_gpt.speed_monitor import estimate_flops, measure_flops
 from lit_gpt.utils import chunked_cross_entropy, get_default_supported_precision, num_parameters, step_csv_logger
+from lightning.fabric.loggers import TensorBoardLogger
 
 data_config = [
     # ("arxiv", 2.5),
@@ -36,11 +39,14 @@ data_config = [
 
 
 def setup():
+    # training arguments
     args = arg_loader()
     precision = args.precision or get_default_supported_precision(training=True)
 
     args.gradient_accumulation_steps = args.batch_size // args.micro_batch_size
     assert args.gradient_accumulation_steps > 0
+
+    args.lr_decay_iters = args.max_iters
 
     if args.devices > 1:
         strategy = FSDPStrategy(
@@ -53,7 +59,12 @@ def setup():
     else:
         strategy = "auto"
 
-    logger = step_csv_logger("out", args.exp_name, flush_logs_every_n_steps=args.log_interval)
+    run_name = f"{args.exp_name}_{args.seed}_{int(time.time())}"
+    logger = TensorBoardLogger(
+            root_dir=os.path.join("logs", "fabric_logs", datetime.today().strftime("%Y-%m-%d_%H-%M-%S")),
+            name=run_name
+    )
+    # logger = step_csv_logger("out", args.exp_name, flush_logs_every_n_steps=args.log_interval)
     fabric = L.Fabric(devices=args.devices,
                       strategy=strategy,
                       precision=precision,
@@ -65,14 +76,11 @@ def setup():
 
 
 def main(fabric, args):
-    speed_monitor = SpeedMonitor(fabric, window_size=50, time_unit="seconds")
-
     args.out_dir = Path(args.out_dir) / args.exp_name
     if fabric.global_rank == 0:
         args.out_dir.mkdir(parents=True, exist_ok=True)
 
-    args.lr_decay_iters = args.max_iters
-
+    speed_monitor = SpeedMonitor(fabric, window_size=50, time_unit="seconds")
     # config = Config.from_name(model_name)
 
     train_dataloader, val_dataloader = create_dataloaders(
@@ -81,14 +89,14 @@ def main(fabric, args):
             fabric=fabric,
             train_data_dir=Path(args.train_data_dir),
             val_data_dir=Path(args.val_data_dir) if args.val_data_dir else None,
-            seed=(6060 + fabric.global_rank),
+            seed=(args.seed + fabric.global_rank),
     )
     if val_dataloader is None:
         train_dataloader = fabric.setup_dataloaders(train_dataloader)
     else:
         train_dataloader, val_dataloader = fabric.setup_dataloaders(train_dataloader, val_dataloader)
 
-    fabric.seed_everything(6060)  # same seed for every process to init model (FSDP)
+    fabric.seed_everything(args.seed)  # same seed for every process to init model (FSDP)
 
     # fabric.print(f"Loading model with {config.__dict__}")
     fabric.print(f"Training args {args}")
@@ -190,14 +198,20 @@ def train(fabric, state, train_dataloader, val_dataloader, speed_monitor, args):
                     f"iter {state['iter_num']} step {state['step_count']}: loss {loss.item():.4f}, iter time:"
                     f" {(t1 - iter_t0) * 1000:.2f}ms{' (optimizer.step)' if not is_accumulating else ''}"
             )
+            fabric.log("loss", loss.item(), state['iter_num'])
+            fabric.log("train ppl", ppl(loss).item(), state['iter_num'])
+            fabric.log("train iter time", (t1 - iter_t0) * 1000, state['iter_num'])
 
         if val_dataloader is not None and not is_accumulating and state["step_count"] % args.eval_interval == 0:
             t0 = time.perf_counter()
-            val_loss, ppl = validate(fabric, model, val_dataloader, args)
+            val_loss, val_ppl = validate(fabric, model, val_dataloader, args)
             t1 = time.perf_counter() - t0
             speed_monitor.eval_end(t1)
-            fabric.print(f"step {state['iter_num']}: val loss {val_loss:.4f}, ppl {ppl:.4E}, val time:"
+            fabric.print(f"step {state['iter_num']}: val loss {val_loss:.4f}, val ppl {ppl:.4E}, val time:"
                          f" {t1 * 1000:.2f}ms")
+            fabric.log("val loss", val_loss.item(), state['iter_num'])
+            fabric.log("train ppl", val_ppl.item(), state['iter_num'])
+            fabric.log("val iter time", t1 * 1000, state['iter_num'])
             fabric.barrier()
         if not is_accumulating and state["step_count"] % args.save_interval == 0:
             checkpoint_path = args.out_dir / f"iter-{state['iter_num']:06d}-ckpt.pth"
@@ -219,18 +233,17 @@ def validate(fabric: L.Fabric, model: torch.nn.Module, val_dataloader: DataLoade
         losses[k] = loss.item()
     out = losses.mean()
 
-    targets
-    try:
-        perplexity = torch.exp(out)
-    except OverflowError:
-        perplexity = float("inf")
-
     model.train()
-    return out, perplexity
+    return out, ppl(out)
 
 
 def ppl(loss):
-    return math.exp(min(20, loss))
+    try:
+        perplexity = torch.exp(loss)
+        # math.exp(min(20, loss))
+    except OverflowError:
+        perplexity = float("inf")
+    return perplexity
 
 
 def create_dataloader(

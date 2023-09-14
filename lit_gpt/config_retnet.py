@@ -41,6 +41,8 @@ def arg_loader():
 
     parser.add_argument("--resume", action="store_true")
 
+    parser.add_argument("--seed", type=int, default=6060)
+
     args = parser.parse_args()
     return args
 

@@ -10,7 +10,7 @@ DATA_PATH=${PROJ_DIR}/data
 OUTPUT_DIR=${PROJ_DIR}/output
 HF_DIR=${PROJ_DIR}/huggingface_models
 
-EXP_NAME="retnet_3b_redpajama_sample"
+EXP_NAME="retnet_3b"
 
 mkdir -p ${OUTPUT_DIR}/${EXP_NAME}
 
@@ -72,7 +72,7 @@ TRAIN_ARGS="--exp_name ${EXP_NAME} \
 --eval_iters 1 \
 --log_interval 2 \
 --micro_batch_size 4 \
---batch_size 4 \
+--batch_size 16 \
 --num_nodes 2 \
 --devices ${GPUS_PER_NODE} \
 --num_nodes ${HOST_NUM}"

@@ -10,7 +10,7 @@ eos_id = tokenizer.eos_token_id
 
 
 def process_data(data, tokenizer, bos=False, eos=False):
-    input_ids = tokenizer(data["text"], truncation=False, add_special_tokens=False)["input_ids"]
+    input_ids = tokenizer(data["article"], truncation=False, add_special_tokens=False)["input_ids"]
     if bos:
         if bos_id is None:
             raise NotImplementedError("This tokenizer does not defined a bos token")
@@ -27,6 +27,7 @@ data_stream = load_dataset('json', data_files='/data2/swcho_data/code/lit-GPT/da
                            split='train', streaming=True)
 next(iter(data_stream))
 
+print(f'bos token: {tokenizer.bos_token} {tokenizer.bos_token_id}')
 process_ds = partial(process_data, tokenizer=tokenizer, bos=True)
 tk_dataset = data_stream.map(process_ds)
 next(iter(tk_dataset))

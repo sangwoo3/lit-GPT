@@ -5,8 +5,8 @@ from functools import partial
 from tqdm import tqdm
 
 tokenizer = AutoTokenizer.from_pretrained('meta-llama/Llama-2-7b-hf')
-bos_id = tokenizer.bos_id
-eos_id = tokenizer.eos_id
+bos_id = tokenizer.bos_token_id
+eos_id = tokenizer.eos_token_id
 
 
 def process_data(data, tokenizer, bos=False, eos=False):

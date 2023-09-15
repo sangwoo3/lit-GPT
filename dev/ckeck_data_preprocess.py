@@ -19,8 +19,8 @@ def process_data(data, tokenizer, bos=False, eos=False):
         if eos_id is None:
             raise NotImplementedError("This tokenizer does not defined a eos token")
         input_ids = input_ids + [eos_id]
-    # data["input_ids"] = input_ids
-    return input_ids
+    data["input_ids"] = input_ids
+    return data
 
 
 data_stream = load_dataset('json', data_files='/data2/swcho_data/code/lit-GPT/data/cnn_sample.jsonl',
@@ -29,7 +29,8 @@ print(next(iter(data_stream)))
 
 print(f'bos token: {tokenizer.bos_token} {tokenizer.bos_token_id}')
 process_ds = partial(process_data, tokenizer=tokenizer, bos=True)
-tk_dataset = data_stream.map(process_ds)
+original_columns = list(data_stream.features.keys())
+tk_dataset = data_stream.map(process_ds, remove_columns=original_columns)
 # print(next(iter(tk_dataset)))
 
 ii = 0

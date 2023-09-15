@@ -25,12 +25,12 @@ def process_data(data, tokenizer, bos=False, eos=False):
 
 data_stream = load_dataset('json', data_files='/data2/swcho_data/code/lit-GPT/data/cnn_sample.jsonl',
                            split='train', streaming=True)
-next(iter(data_stream))
+print(next(iter(data_stream)))
 
 print(f'bos token: {tokenizer.bos_token} {tokenizer.bos_token_id}')
 process_ds = partial(process_data, tokenizer=tokenizer, bos=True)
 tk_dataset = data_stream.map(process_ds)
-next(iter(tk_dataset))
+print(next(iter(tk_dataset)))
 
 ii = 0
 for i, tk in enumerate(tqdm(tk_dataset)):

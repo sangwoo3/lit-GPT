@@ -30,7 +30,7 @@ print(next(iter(data_stream)))
 print(f'bos token: {tokenizer.bos_token} {tokenizer.bos_token_id}')
 process_ds = partial(process_data, tokenizer=tokenizer, bos=True)
 tk_dataset = data_stream.map(process_ds)
-print(next(iter(tk_dataset)))
+# print(next(iter(tk_dataset)))
 
 ii = 0
 for i, tk in enumerate(tqdm(tk_dataset)):

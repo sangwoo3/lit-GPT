@@ -28,7 +28,7 @@ data_stream = load_dataset('json', data_files='/data2/swcho_data/code/lit-GPT/da
 next(iter(data_stream))
 
 process_ds = partial(process_data, tokenizer=tokenizer, bos=True)
-tk_dataset = data_stream.map(process_data, num_proc=10)
+tk_dataset = data_stream.map(process_ds, num_proc=10)
 next(iter(tk_dataset))
 
 ii = 0

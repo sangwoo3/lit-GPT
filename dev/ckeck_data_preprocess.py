@@ -2,6 +2,7 @@ from datasets import load_dataset
 from transformers import AutoTokenizer
 
 from functools import partial
+from tqdm import tqdm
 
 tokenizer = AutoTokenizer.from_pretrained('meta-llama/Llama-2-7b-hf')
 bos_id = tokenizer.bos_id
@@ -31,7 +32,7 @@ tk_dataset = data_stream.map(process_data, num_proc=10)
 next(iter(tk_dataset))
 
 ii = 0
-for i, tk in enumerate(iter(tk_dataset)):
+for i, tk in enumerate(tqdm(iter(tk_dataset))):
     if i < 3:
         print(i, tk)
     ii += 1

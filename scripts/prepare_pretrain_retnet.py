@@ -1,109 +1,95 @@
-import glob
-import json
-import os
+# import glob
+# import json
+# import os
 import sys
 from pathlib import Path
 
 import numpy as np
-from tqdm import tqdm
+# from tqdm import tqdm
+
+from functools import partial
+from transformers import AutoTokenizer
+from datasets import load_dataset
+import multiprocessing
 
 # support running without installing as a package
 wd = Path(__file__).parent.parent.resolve()
 sys.path.append(str(wd))
 
 import lit_gpt.packed_dataset as packed_dataset
-from lit_gpt import Config, Tokenizer
-from lit_gpt.config_retnet import arg_loader
+# from lit_gpt import Config, Tokenizer
 
-filenames_sample = [
-    # "arxiv_sample.jsonl",
-    "book_sample.jsonl",
-    # "c4_sample.jsonl",
-    # "cc_2019-30_sample.jsonl",
-    # "cc_2020-05_sample.jsonl",
-    # "cc_2021-04_sample.jsonl",
-    # "cc_2022-05_sample.jsonl",
-    # "cc_2023-06_sample.jsonl",
-    # "github_sample.jsonl",
-    "stackexchange_sample.jsonl",
-    "wikipedia_sample.jsonl",
-]
-
-filename_sets = {
-    "arxiv": "arxiv/arxiv*",
-    "book": "book/book*",
-    "c4": "c4/c4-train*",
-    "common_crawl": "common_crawl/*",
-    "github": "github/filtered*",
-    "stackexchange": "stackexchange/stackexchange*",
-    "wikipedia": "wikipedia/wiki*",
-}
+tokenizer_dir = "/apdcephfs/share_300000800/user/swcho/huggingface_models/"
+tokenizer = AutoTokenizer.from_pretrained(tokenizer_dir)
+bos_id = tokenizer.bos_id
+eos_id = tokenizer.eos_id
 
 
-def prepare_sample(
-        source_path: Path, checkpoint_dir: Path, destination_path: Path, chunk_size: int, match: str = ""
-) -> None:
-    """Prepare the "Red Pajama" dataset using the original tokenizer."""
+def process_data(data, tokenizer, bos=False, eos=False):
+    input_ids = tokenizer(data["text"], truncation=False, add_special_tokens=False)["input_ids"]
+    if bos:
+        if bos_id is None:
+            raise NotImplementedError("This tokenizer does not defined a bos token")
+        input_ids = [bos_id] + input_ids
+    if eos:
+        if eos_id is None:
+            raise NotImplementedError("This tokenizer does not defined a eos token")
+        input_ids = input_ids + [eos_id]
+    # data["input_ids"] = input_ids
+    return input_ids
+
+
+def process(source_path: Path,
+            destination_path: Path,
+            prefix: str,
+            chunk_size: int,
+            num_proc: int):
+    source_file = str(source_path / "merged_360G_v2.jsonl")
+
+    merged_dataset_streamed = load_dataset(
+            "json", data_files=source_file, streaming=True
+    )
+    print(next(iter(merged_dataset_streamed)))
+
+    process_dataset = partial(process_data, tokenizer=tokenizer, bos=True)
+    tokenized_dataset = merged_dataset_streamed.map(process_dataset, num_proc=num_proc)
+    print(next(iter(tokenized_dataset)))
+
     destination_path.mkdir(parents=True, exist_ok=True)
 
-    tokenizer = Tokenizer(checkpoint_dir)
+    builder = packed_dataset.PackedDatasetBuilder(
+            outdir=destination_path,
+            prefix=prefix,
+            chunk_size=chunk_size,
+            sep_token=tokenizer.eos_id,
+            dtype="auto",
+            vocab_size=tokenizer.vocab_size,
+    )
 
-    for name in filenames_sample:
-        if match and match not in name:
-            continue
+    # TODO: test with small data
+    for td in tokenized_dataset:
+        builder.add_array(np.array(td, dtype=builder.dtype))
 
-        filepath = source_path / name
-
-        if not filepath.is_file():
-            raise RuntimeError(
-                    f"Input file not found at {filepath}. \nMake sure you download the data, e.g. wget -i"
-                    " https://data.together.xyz/redpajama-data-1T/v1.0.0/urls.txt or through"
-                    " \nhttps://huggingface.co/datasets/togethercomputer/RedPajama-Data-1T"
-                    " \nhttps://huggingface.co/datasets/togethercomputer/RedPajama-Data-1T-Sample \n"
-            )
-
-        prefix, _ = os.path.splitext(name)
-
-        builder = packed_dataset.PackedDatasetBuilder(
-                outdir=destination_path,
-                prefix=prefix,
-                chunk_size=chunk_size,
-                sep_token=tokenizer.eos_id,
-                dtype="auto",
-                vocab_size=tokenizer.vocab_size,
-        )
-
-        print(f"Processing {name}")
-
-        with open(filepath, encoding="utf-8") as f:
-            for row in tqdm(f):
-                text = json.loads(row)["text"]
-                text_ids = tokenizer.encode(text, bos=True, eos=True)
-                builder.add_array(np.array(text_ids, dtype=builder.dtype))
-
-        builder.write_reminder()
+    builder.write_reminder()
 
 
 def prepare(
-        source_path: Path = Path("data/RedPajama-Data-1T-Sample"),
-        checkpoint_dir: Path = Path("checkpoints/stabilityai/stablelm-base-alpha-3b"),
-        destination_path: Path = Path("data/redpajama_sample"),
-        sample: bool = True,
-        match: str = "",
+        source_path: Path = Path("/apdcephfs/share_300000800/user/riversong/pile/train"),
+        destination_path: Path = Path("/apdcephfs/share_300000800/user/swcho/data/pretrain"),
+        block_size: int = 2048,
+        prefix: str = "PCS-merged",
 ) -> None:
-    # """Prepare the "Red Pajama" dataset. We assume tokenizer has been trained."""
-    # with open(checkpoint_dir / "lit_config.json") as fp:
-    #     config = Config(**json.load(fp))
-    # args = arg_loader()
-    block_size = 2048
+    block_size = block_size
 
-    prepare_fn = prepare_sample  # if sample else prepare_full
-    prepare_fn(
+    max_cpus = multiprocessing.cpu_count()
+    num_proc = int(max_cpus * 0.9)
+
+    process(
             source_path=source_path,
-            checkpoint_dir=checkpoint_dir,
             destination_path=destination_path,
-            chunk_size=(block_size + 1) * 1024,  # block size + 1 for causal, 1024 blocks
-            match=match,
+            prefix=prefix,
+            chunk_size=(block_size + 1) * 1024 * 1024,  # block size + 1 for causal, 1024 * 1024 blocks
+            num_proc=num_proc,
     )
 
 

@@ -50,9 +50,9 @@ def process(source_file: str,
     print(next(iter(merged_dataset_streamed)))
 
     process_dataset = partial(process_data, tokenizer=tokenizer, bos=True)
-    tokenized_dataset = merged_dataset_streamed.map(process_dataset, batched=True)
-    tokenized_dataset = tokenized_dataset.rename_column("text")
+    tokenized_dataset = merged_dataset_streamed.map(process_dataset, remove_columns=["text"])
     print(next(iter(tokenized_dataset)))
+    print("[finished tokenize]")
 
     destination_path.mkdir(parents=True, exist_ok=True)
 
@@ -65,11 +65,12 @@ def process(source_file: str,
             vocab_size=tokenizer.vocab_size,
     )
 
-    # TODO: test with small data
     for td in tqdm(tokenized_dataset):
         builder.add_array(np.array(td, dtype=builder.dtype))
+    print("[finished adding to builder array]")
 
     builder.write_reminder()
+    print("[finished writing to files]")
 
 
 def prepare(
@@ -82,9 +83,11 @@ def prepare(
     file_size_byte = os.stat(source_file).st_size
     num_files = 512
     chunk_size = file_size_byte // num_files // (block_size + 1)    # block size + 1 for causal
+    print(f"source file size: {file_size_byte}bytes, target file count: {num_files}, chunk size: {chunk_size}")
 
     max_cpus = multiprocessing.cpu_count()
     num_proc = int(max_cpus * 0.9)
+    print(f"total cpu count: {max_cpus}, number of cpus to use: {num_proc}")
 
     process(
             source_file=source_file,

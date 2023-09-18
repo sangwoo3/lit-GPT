@@ -50,7 +50,7 @@ def process(source_file: str,
     print(next(iter(merged_dataset_streamed)))
 
     process_dataset = partial(process_data, tokenizer=tokenizer, bos=True)
-    tokenized_dataset = merged_dataset_streamed.map(process_dataset, num_proc=num_proc, batched=True)
+    tokenized_dataset = merged_dataset_streamed.map(process_dataset, batched=True)
     tokenized_dataset = tokenized_dataset.rename_column("text")
     print(next(iter(tokenized_dataset)))
 

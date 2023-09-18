@@ -30,14 +30,13 @@ print(next(iter(data_stream)))
 print(f'bos token: {tokenizer.bos_token} {tokenizer.bos_token_id}')
 process_ds = partial(process_data, tokenizer=tokenizer, bos=True)
 # original_columns = list(data_stream.features.keys())  # error
-tk_dataset = data_stream.map(process_ds, batched=True)    #, remove_columns=original_columns)
-print(next(iter(tk_dataset)))
+tk_dataset = data_stream.map(process_ds)    #, remove_columns=original_columns)
 tk_dataset = tk_dataset.rename_columns(["article", "highlights", "id"])
-print(next(iter(tk_dataset)))
+print(list(tk_dataset.take(1)))
 
 ii = 0
 for i, tk in enumerate(tqdm(tk_dataset)):
-    if i < 3:
+    if i < 2:
         print(i, tk)
     ii += 1
 print(f'iteration is done {ii} iter')

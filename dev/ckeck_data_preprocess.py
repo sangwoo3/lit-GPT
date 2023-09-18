@@ -31,8 +31,8 @@ print(f'bos token: {tokenizer.bos_token} {tokenizer.bos_token_id}')
 process_ds = partial(process_data, tokenizer=tokenizer, bos=True)
 # original_columns = list(data_stream.features.keys())  # error
 tk_dataset = data_stream.map(process_ds)    #, remove_columns=original_columns)
-tk_dataset_updated = tk_dataset.rename_columns(["article", "highlights", "id"])
-print(list(tk_dataset_updated.take(1)))
+# tk_dataset_updated = tk_dataset.rename_columns(["article", "highlights", "id"])
+print(list(tk_dataset.take(1)))
 
 ii = 0
 for i, tk in enumerate(tqdm(tk_dataset)):

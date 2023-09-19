@@ -62,12 +62,12 @@ export HF_DATASETS_CACHE=${PROJ_DIR}/.cache/
 export TRANSFORMERS_CACHE=${PROJ_DIR}/.cache/
 
 LAUNCH_ARGS="
-             --devices ${GPUS_PER_NODE} \
-             --num_nodes ${HOST_NUM} \
              --node_rank $NODE_RANK \
              --main_address $MASTER_ADDR \
              --main_port $MASTER_PORT \
              "
+#                          --devices ${GPUS_PER_NODE} \
+#             --num_nodes ${HOST_NUM} \
 #             --accelerator cuda \
 #              --strategy fsdp \
 #              --precision bf16-mixed \

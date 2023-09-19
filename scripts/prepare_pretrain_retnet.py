@@ -39,6 +39,27 @@ def process_data(data, tokenizer, bos=False, eos=False):
     return data
 
 
+def build_packed_data(destination_path, prefix, chunk_size, dataset):
+    builder = packed_dataset.PackedDatasetBuilder(
+            outdir=destination_path,
+            prefix=prefix,
+            chunk_size=chunk_size,
+            sep_token=tokenizer.eos_id,
+            dtype="auto",
+            vocab_size=tokenizer.vocab_size,
+    )
+
+    num_tokens = 0
+    for td in tqdm(dataset):
+        builder.add_array(np.array(td["input_ids"], dtype=builder.dtype))
+        num_tokens += len(td["input_ids"])
+    print(f"[finished adding to builder array] - prifix: {prefix}")
+    print(f"total processed tokens: {num_tokens}")
+
+    builder.write_reminder()
+    print("[finished writing to files]")
+
+
 def process(source_file: str,
             destination_path: Path,
             prefix: str,
@@ -54,23 +75,24 @@ def process(source_file: str,
     print(next(iter(tokenized_dataset)))
     print("[finished tokenize]")
 
+    n_tk = 0
+    for tk in tokenized_dataset:
+        n_tk += 1
+
+    shuffled_tk_dataset = tokenized_dataset.shuffle(buffer_size=n_tk + 1, seed=42)
+    valid_count = int(n_tk * 0.0005)
+    print("suffling is done with tokenized dataset")
+    print(f"valid instance / total instance: {valid_count} / {n_tk}")
+    shuffled_ds_train = shuffled_tk_dataset.skip(valid_count)
+    shuffled_ds_valid = shuffled_tk_dataset.take(valid_count)
+
     destination_path.mkdir(parents=True, exist_ok=True)
 
-    builder = packed_dataset.PackedDatasetBuilder(
-            outdir=destination_path,
-            prefix=prefix,
-            chunk_size=chunk_size,
-            sep_token=tokenizer.eos_id,
-            dtype="auto",
-            vocab_size=tokenizer.vocab_size,
-    )
+    build_packed_data(destination_path, prefix+'-train',
+                      chunk_size, shuffled_ds_train)
 
-    for td in tqdm(tokenized_dataset):
-        builder.add_array(np.array(td, dtype=builder.dtype))
-    print("[finished adding to builder array]")
-
-    builder.write_reminder()
-    print("[finished writing to files]")
+    build_packed_data(destination_path, prefix + '-val',
+                      chunk_size, shuffled_ds_valid)
 
 
 def prepare(

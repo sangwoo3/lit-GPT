@@ -71,7 +71,7 @@ def process(source_path: Path,
             num_proc: int):
     source_file = str(source_path / "merged_360G_v2.jsonl")
     merged_dataset_streamed = load_dataset(
-            "json", data_files=source_file, streaming=True
+            "json", data_files=source_file, split='train', streaming=True
     )
     print(next(iter(merged_dataset_streamed)))
 

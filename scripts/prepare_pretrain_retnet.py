@@ -121,7 +121,7 @@ def prepare(
     print(f"total cpu count: {max_cpus}, number of cpus to use: {num_proc}")
 
     process(
-            source_file=source_path,
+            source_path=source_path,
             destination_path=destination_path,
             prefix=prefix,
             num_proc=num_proc,

@@ -77,6 +77,8 @@ def setup():
                       accelerator='gpu',
                       # num_nodes=args.num_nodes,
                       )
+    fabric.print(f"Training args in setup {args}")
+
     if args.num_nodes > 1:
         main(fabric, args)
     else:

@@ -46,10 +46,12 @@ train_ds = shuffled_tk_dataset.skip(100)
 valid_ds = shuffled_tk_dataset.take(100)
 
 ii = 0
+n_tk = 0
 for i, tk in enumerate(tqdm(train_ds)):
     if i < 1:
         print(i, tk)
     ii += 1
+    n_tk += len(tk['input_ids'])
 print(f'[train] iteration is done: {ii} iter')
 
 ii = 0

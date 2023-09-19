@@ -34,11 +34,27 @@ tk_dataset = data_stream.map(process_ds, remove_columns=["article", "highlights"
 #,
 # remove_columns=original_columns)
 # tk_dataset_updated = tk_dataset.rename_columns(["article", "highlights", "id"])
-print(list(tk_dataset.take(1)))
+# print(list(tk_dataset.take(1)))
 
 ii = 0
-for i, tk in enumerate(tqdm(tk_dataset)):
-    if i < 2:
+for tk in tk_dataset:
+    ii += 1
+print(f"total number of instance: {ii}")
+
+shuffled_tk_dataset = tk_dataset.shuffle(buffer_size=ii+1, seed=42)
+train_ds = shuffled_tk_dataset.skip(100)
+valid_ds = shuffled_tk_dataset.take(100)
+
+ii = 0
+for i, tk in enumerate(tqdm(train_ds)):
+    if i < 1:
         print(i, tk)
     ii += 1
-print(f'iteration is done {ii} iter')
+print(f'[train] iteration is done: {ii} iter')
+
+ii = 0
+for i, tk in enumerate(tqdm(valid_ds)):
+    if i < 1:
+        print(i, tk)
+    ii += 1
+print(f'[valid] iteration is done: {ii} iter')

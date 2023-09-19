@@ -69,14 +69,18 @@ def setup():
             name=run_name
     )
     # logger = step_csv_logger("out", args.exp_name, flush_logs_every_n_steps=args.log_interval)
-    fabric = L.Fabric(devices=args.devices,
+    fabric = L.Fabric(
+                      devices=args.devices,
                       strategy=strategy,
                       precision=precision,
                       loggers=logger,
                       accelerator='gpu',
-                      num_nodes=args.num_nodes,
+                      # num_nodes=args.num_nodes,
                       )
-    fabric.launch(main, args)
+    if args.num_nodes > 1:
+        main(fabric, args)
+    else:
+        fabric.launch(main, args)
 
 
 def main(fabric, args):
@@ -118,6 +122,7 @@ def main(fabric, args):
     t0 = time.perf_counter()
     with fabric.init_module(empty_init=True):
         model = RetNet(args)
+        model = torch.compile(model)
         model.apply(model._init_weights)
         fabric.print(f"Model configuration {model.config.__dict__}")
         fabric.print(model.model)

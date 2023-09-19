@@ -61,15 +61,16 @@ export WORLD_SIZE=$(($GPUS_PER_NODE * $NNODES))
 export HF_DATASETS_CACHE=${PROJ_DIR}/.cache/
 export TRANSFORMERS_CACHE=${PROJ_DIR}/.cache/
 
-LAUNCH_ARGS="--accelerator cuda \
-             --strategy fsdp \
+LAUNCH_ARGS="
              --devices $WORLD_SIZE \
              --num_nodes $NNODES \
              --node_rank $NODE_RANK \
              --main_address $MASTER_ADDR \
              --main_port $MASTER_PORT \
-             --precision bf16-mixed \
              "
+#             --accelerator cuda \
+#              --strategy fsdp \
+#              --precision bf16-mixed \
 
 DATA_ARGS="--train_data_dir ${DATA_PATH}/lit-redpajama-sample \
 --out_dir ${OUTPUT_DIR} \

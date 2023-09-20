@@ -70,45 +70,60 @@ def process(source_path: Path,
             prefix: str,
             num_proc: int):
     source_file = str(source_path / "merged_360G_v2.jsonl")
-    merged_dataset_streamed = load_dataset(
-            "json", data_files=source_file, split='train', streaming=True
+    merged_dataset = load_dataset(
+            "json", data_files=source_file, split='train',
+            # streaming=True,
     )
-    print(next(iter(merged_dataset_streamed)))
+    # print(next(iter(merged_dataset_streamed)))
+    print(merged_dataset[0])
+
+    # validation set: 0.01%
+    merged_dataset = merged_dataset.train_test_split(test_size=0.0001, shuffle=True)
+    merged_dataset['valid'] = merged_dataset.pop('test')
 
     t0 = time.time()
     process_dataset = partial(process_data, tokenizer=tokenizer, bos=True)
-    tokenized_dataset = merged_dataset_streamed.map(process_dataset, remove_columns=["text"])
+    tokenized_dataset = merged_dataset.map(process_dataset,
+                                           remove_columns=["text"],
+                                           num_proc=num_proc,
+                                           desc='Tokenizing...')
     t1 = time.time()
-    print(next(iter(tokenized_dataset)))
+    # print(next(iter(tokenized_dataset)))
+    print(tokenized_dataset[0])
     print(f"[finished tokenize] elapsed: {(t1-t0)*1000}sec")
+    n_ds_train = len(tokenized_dataset['train'])
+    print(f"train dataset size: {n_ds_train}")
+    n_ds_valid = len(tokenized_dataset['valid'])
+    print(f"valid dataset size: {n_ds_valid}")
 
-    n_ds, n_tk = 0, 0
-    for tk in tokenized_dataset:
-        n_ds += 1
-        n_tk += len(tk['input_ids'])
-    print(f"total tokenized tokens: {n_tk}, dataset size: {n_ds}")
+    # n_ds, n_tk = 0, 0
+    # for tk in tokenized_dataset:
+    #     n_ds += 1
+    #     n_tk += len(tk['input_ids'])
+    # print(f"total tokenized tokens: {n_tk}, dataset size: {n_ds}")
 
     # file_size_byte = os.stat(source_file).st_size
     # chunk_size = file_size_byte // num_files // (block_size + 1)  # block size + 1 for causal
     # print(f"source file size: {file_size_byte}bytes, target file count: {num_files}, chunk size: {chunk_size}")
 
-    shuffled_tk_dataset = tokenized_dataset.shuffle(buffer_size=n_ds + 1, seed=42)
-    n_val = int(n_ds * 0.0001)
-    print("suffling is done with tokenized dataset")
-    print(f"valid instance: {n_val} / total instance: {n_ds}")
-    shuffled_ds_train = shuffled_tk_dataset.skip(n_val)
-    shuffled_ds_valid = shuffled_tk_dataset.take(n_val)
+    # shuffled_tk_dataset = tokenized_dataset.shuffle(buffer_size=n_ds_train + 1, seed=42)
+    # n_val = int(n_ds * 0.0001)
+    # print("suffling is done with tokenized dataset")
+    # print(f"valid instance: {n_val} / total instance: {n_ds}")
+    # shuffled_ds_train = shuffled_tk_dataset.skip(n_val)
+    # shuffled_ds_valid = shuffled_tk_dataset.take(n_val)
 
-    chunk_size_train = (n_ds - n_val) // n_train_files // (block_size + 1) * (block_size + 1)
-    chunk_size_valid = n_val // n_valid_files // (block_size + 1) * (block_size + 1)
+    chunk_size_train = (n_ds_train - n_ds_valid) // n_train_files // (block_size + 1) * (block_size + 1)
+    chunk_size_valid = n_ds_valid // n_valid_files // (block_size + 1) * (block_size + 1)
+    print(f"chunk size: train-{chunk_size_train}, valid-{chunk_size_valid}")
 
     destination_path.mkdir(parents=True, exist_ok=True)
 
     build_packed_data(destination_path, prefix + '-train',
-                      chunk_size_train, shuffled_ds_train)
+                      chunk_size_train, tokenized_dataset['train'])
 
     build_packed_data(destination_path, prefix + '-val',
-                      chunk_size_valid, shuffled_ds_valid)
+                      chunk_size_valid, tokenized_dataset['valid'])
 
 
 def prepare(
@@ -117,7 +132,7 @@ def prepare(
         prefix: str = "PCS-merged-360G",
 ) -> None:
     max_cpus = multiprocessing.cpu_count()
-    num_proc = int(max_cpus * 0.8)
+    num_proc = int(max_cpus * 0.9)
     print(f"total cpu count: {max_cpus}, number of cpus to use: {num_proc}")
 
     process(

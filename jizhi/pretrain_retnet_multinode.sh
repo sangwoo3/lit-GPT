@@ -62,7 +62,7 @@ export HF_DATASETS_CACHE=${PROJ_DIR}/.cache/
 export TRANSFORMERS_CACHE=${PROJ_DIR}/.cache/
 
 LAUNCH_ARGS="
-             --devices ${WORLD_SIZE} \
+             --devices ${GPUS_PER_NODE} \
              --num_nodes ${HOST_NUM} \
              --node_rank $NODE_RANK \
              --main_address $MASTER_ADDR \

@@ -90,7 +90,7 @@ print(f"total number of valid instance: {ii}")
 block_size = 512
 
 chunk_size_train = len(tk_dataset['train']) // 4 // block_size * block_size
-destination_path = Path('/data2/swcho_data/code/lit-GPT/data/cnndm')
+destination_path = Path('/data2/swcho_data/code/lit-GPT/data/cnndm_sample')
 destination_path.mkdir(parents=True, exist_ok=True)
 build_packed_data(destination_path, 'cnndm-train',
                   chunk_size_train, tk_dataset['train'])

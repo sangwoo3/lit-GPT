@@ -26,7 +26,7 @@ if False:
     bos_id = tokenizer.bos_token_id
     eos_id = tokenizer.eos_token_id
 else:
-    tokenizer = Tokenizer(tokenizer_dir)
+    tokenizer = Tokenizer(Path(tokenizer_dir))
 
 n_train_files = 512
 n_valid_files = 32

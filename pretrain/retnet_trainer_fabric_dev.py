@@ -116,7 +116,6 @@ def main(fabric, args):
     #     fabric.print(f"val_dataloader len: {len(val_dataloader)}")
     # fabric.print(f"train_dataloader len: {len(train_dataloader)}")
 
-
     fabric.seed_everything(args.seed)  # same seed for every process to init model (FSDP)
 
     # fabric.print(f"Loading model with {config.__dict__}")
@@ -124,7 +123,7 @@ def main(fabric, args):
     t0 = time.perf_counter()
     with fabric.init_module(empty_init=True):
         model = RetNet(args)
-        model = torch.compile(model)
+        # model = torch.compile(model)
         model.apply(model._init_weights)
         fabric.print(f"Model configuration {model.config.__dict__}")
         fabric.print(model.model)

@@ -24,39 +24,57 @@ def process_data(data, tokenizer, bos=False, eos=False):
 
 
 data_stream = load_dataset('json', data_files='/data2/swcho_data/code/lit-GPT/data/cnn_sample.jsonl',
-                           split='train', streaming=True)
-print(next(iter(data_stream)))
+                           split='train',
+                           # streaming=True
+                           )
+# print(next(iter(data_stream)))
+print(data_stream[0])
+
+data_stream = data_stream.train_test_split(test_size=0.1, shuffle=True)
+data_stream['validation'] = data_stream.pop('test')
 
 print(f'bos token: {tokenizer.bos_token} {tokenizer.bos_token_id}')
 process_ds = partial(process_data, tokenizer=tokenizer, bos=True)
 # original_columns = list(data_stream.features.keys())  # error
-tk_dataset = data_stream.map(process_ds, remove_columns=["article", "highlights", "id"])
+tk_dataset = data_stream.map(process_ds, remove_columns=["article", "highlights", "id"], num_proc=10, desc='cnndm')
 #,
 # remove_columns=original_columns)
 # tk_dataset_updated = tk_dataset.rename_columns(["article", "highlights", "id"])
 # print(list(tk_dataset.take(1)))
 
-ii = 0
-for tk in tk_dataset:
-    ii += 1
-print(f"total number of instance: {ii}")
+# ii = 0
+# for tk in tk_dataset:
+#     ii += 1
+ii = len(tk_dataset['train'])
+print(f"total number of train instance: {ii}")
 
-shuffled_tk_dataset = tk_dataset.shuffle(buffer_size=ii+1, seed=42)
-train_ds = shuffled_tk_dataset.skip(100)
-valid_ds = shuffled_tk_dataset.take(100)
-
-ii = 0
 n_tk = 0
-for i, tk in enumerate(tqdm(train_ds)):
+for i, tk in enumerate(tqdm(tk_dataset['train'])):
     if i < 1:
         print(i, tk)
-    ii += 1
     n_tk += len(tk['input_ids'])
-print(f'[train] iteration is done: {ii} iter')
+print(f'[train] iteration is done: {ii} iter / {n_tk} tokens')
 
-ii = 0
-for i, tk in enumerate(tqdm(valid_ds)):
-    if i < 1:
-        print(i, tk)
-    ii += 1
-print(f'[valid] iteration is done: {ii} iter')
+ii = len(tk_dataset['validation'])
+print(f"total number of valid instance: {ii}")
+
+# shuffled_tk_dataset = tk_dataset.shuffle(buffer_size=ii+1, seed=42)
+# train_ds = shuffled_tk_dataset.skip(100)
+# valid_ds = shuffled_tk_dataset.take(100)
+
+
+# ii = 0
+# n_tk = 0
+# for i, tk in enumerate(tqdm(train_ds)):
+#     if i < 1:
+#         print(i, tk)
+#     ii += 1
+#     n_tk += len(tk['input_ids'])
+# print(f'[train] iteration is done: {ii} iter / {n_tk} tokens')
+#
+# ii = 0
+# for i, tk in enumerate(tqdm(valid_ds)):
+#     if i < 1:
+#         print(i, tk)
+#     ii += 1
+# print(f'[valid] iteration is done: {ii} iter')

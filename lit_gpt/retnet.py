@@ -81,6 +81,7 @@ class RetNet(nn.Module):
         self.config.block_size = self.args.block_size
         self.config.n_layer = self.config.decoder_layers
         self.config.n_embd = self.config.decoder_embed_dim
+        self.config.activation_fn = "swish"
 
         # FSDP - forced
         # self.config.checkpoint_activations = True

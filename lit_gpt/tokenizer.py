@@ -15,6 +15,7 @@ class Tokenizer:
             self.backend = "sentencepiece"
             self.bos_id = self.processor.bos_id()
             self.eos_id = self.processor.eos_id()
+            print("Use SentencePiece Tokenizer!")
         elif (vocabulary_path := checkpoint_dir / "tokenizer.json").is_file():
             from tokenizers import Tokenizer as HFTokenizer
 
@@ -35,6 +36,7 @@ class Tokenizer:
                 self.eos_id = self.token_to_id(config["eos_token"])
             else:
                 raise RuntimeError("Missing tokenizer config")
+            print("Use HuggingFace Tokenizer!")
         else:
             raise NotImplementedError
 

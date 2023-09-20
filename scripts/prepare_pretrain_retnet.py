@@ -18,16 +18,21 @@ wd = Path(__file__).parent.parent.resolve()
 sys.path.append(str(wd))
 
 import lit_gpt.packed_dataset as packed_dataset
-# from lit_gpt import Config, Tokenizer
+from lit_gpt import Tokenizer
 
 tokenizer_dir = "/apdcephfs/share_300000800/user/swcho/huggingface_models/"
-tokenizer = AutoTokenizer.from_pretrained(tokenizer_dir)
-bos_id = tokenizer.bos_token_id
-eos_id = tokenizer.eos_token_id
+if False:
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_dir)
+    bos_id = tokenizer.bos_token_id
+    eos_id = tokenizer.eos_token_id
+else:
+    tokenizer = Tokenizer(tokenizer_dir)
 
 n_train_files = 512
 n_valid_files = 32
 block_size = 2048
+n_tk_train_est = 100000000000
+n_tk_valid_est = 10000000
 
 
 def process_data(data, tokenizer, bos=False, eos=False):
@@ -49,7 +54,7 @@ def build_packed_data(destination_path, prefix, chunk_size, dataset):
             outdir=destination_path,
             prefix=prefix,
             chunk_size=chunk_size,
-            sep_token=tokenizer.eos_token_id,
+            sep_token=tokenizer.eos_id,
             dtype="auto",
             vocab_size=tokenizer.vocab_size,
     )
@@ -58,6 +63,28 @@ def build_packed_data(destination_path, prefix, chunk_size, dataset):
     for td in tqdm(dataset):
         builder.add_array(np.array(td["input_ids"], dtype=builder.dtype))
         num_tokens += len(td["input_ids"])
+    print(f"[finished adding to builder array] - prifix: {prefix}")
+    print(f"total processed tokens: {num_tokens}")
+
+    builder.write_reminder()
+    print("[finished writing to files]")
+
+
+def build_packed_data_sp(destination_path, prefix, chunk_size, dataset):
+    builder = packed_dataset.PackedDatasetBuilder(
+            outdir=destination_path,
+            prefix=prefix,
+            chunk_size=chunk_size,
+            sep_token=tokenizer.eos_id,
+            dtype="auto",
+            vocab_size=tokenizer.vocab_size,
+    )
+
+    num_tokens = 0
+    for tds in tqdm(dataset):
+        text_ids = tokenizer.encode(tds["text"])
+        builder.add_array(np.array(text_ids, dtype=builder.dtype))
+        num_tokens += len(text_ids)
     print(f"[finished adding to builder array] - prifix: {prefix}")
     print(f"total processed tokens: {num_tokens}")
 
@@ -81,11 +108,23 @@ def process(source_path: Path,
     merged_dataset = merged_dataset.train_test_split(test_size=0.0001, shuffle=True)
     merged_dataset['valid'] = merged_dataset.pop('test')
 
+    chunk_size_train = n_tk_train_est // n_train_files // (block_size + 1) * (block_size + 1)
+    chunk_size_valid = n_tk_valid_est // n_valid_files // (block_size + 1) * (block_size + 1)
+    print(f"chunk size: train-{chunk_size_train}, valid-{chunk_size_valid}")
+
+    build_packed_data_sp(destination_path, prefix + '-train',
+                         chunk_size_train, merged_dataset['train'])
+    build_packed_data_sp(destination_path, prefix + '-valid',
+                         chunk_size_train, merged_dataset['valid'])
+
+    '''
+    # HF tokenize
     t0 = time.time()
     process_dataset = partial(process_data, tokenizer=tokenizer, bos=True)
     tokenized_dataset = merged_dataset.map(process_dataset,
                                            remove_columns=["text"],
                                            num_proc=num_proc,
+                                           batched=True,
                                            desc='Tokenizing...')
     t1 = time.time()
     # print(next(iter(tokenized_dataset)))
@@ -100,8 +139,7 @@ def process(source_path: Path,
     for tk in tqdm(tokenized_dataset['valid'], desc='valid'):
         n_tk_valid += len(tk['input_ids'])
     print(f"total token count: train-{n_tk_train}, valid-{n_tk_valid}")
-
-
+    
     # n_ds, n_tk = 0, 0
     # for tk in tokenized_dataset:
     #     n_ds += 1
@@ -130,6 +168,7 @@ def process(source_path: Path,
 
     build_packed_data(destination_path, prefix + '-val',
                       chunk_size_valid, tokenized_dataset['valid'])
+    '''
 
 
 def prepare(
@@ -151,4 +190,5 @@ def prepare(
 
 if __name__ == "__main__":
     from jsonargparse import CLI
+
     CLI(prepare)

@@ -138,7 +138,7 @@ def prepare(
         prefix: str = "PCS-merged-360G",
 ) -> None:
     max_cpus = multiprocessing.cpu_count()
-    num_proc = int(max_cpus * 0.9)
+    num_proc = max_cpus - 5  # int(max_cpus * 0.9)
     print(f"total cpu count: {max_cpus}, number of cpus to use: {num_proc}")
 
     process(

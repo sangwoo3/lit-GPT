@@ -134,7 +134,7 @@ def process(source_path: Path,
 
 def prepare(
         source_path: Path = Path("/apdcephfs/share_300000800/user/riversong/pile/train"),
-        destination_path: Path = Path("/apdcephfs/share_300000800/user/swcho/data/pretrain/retnet"),
+        destination_path: Path = Path("/apdcephfs/share_300000800/user/swcho/data/pretrain_retnet"),
         prefix: str = "PCS-merged-360G",
 ) -> None:
     max_cpus = multiprocessing.cpu_count()

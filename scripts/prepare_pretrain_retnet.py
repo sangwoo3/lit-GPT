@@ -49,7 +49,7 @@ def build_packed_data(destination_path, prefix, chunk_size, dataset):
             outdir=destination_path,
             prefix=prefix,
             chunk_size=chunk_size,
-            sep_token=tokenizer.eos_id,
+            sep_token=tokenizer.eos_token_id,
             dtype="auto",
             vocab_size=tokenizer.vocab_size,
     )

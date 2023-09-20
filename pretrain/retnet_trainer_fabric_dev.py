@@ -50,16 +50,16 @@ def setup():
 
     args.out_dir = Path(args.out_dir) / args.exp_name
 
-    if args.devices > 1:
-        strategy = FSDPStrategy(
-                auto_wrap_policy={DecoderLayer},
-                activation_checkpointing_policy={DecoderLayer},
-                state_dict_type="full",
-                limit_all_gathers=True,
-                cpu_offload=False,
-        )
-    else:
-        strategy = "auto"
+    # if args.devices > 1:
+    strategy = FSDPStrategy(
+            auto_wrap_policy={DecoderLayer},
+            activation_checkpointing_policy={DecoderLayer},
+            state_dict_type="full",
+            limit_all_gathers=True,
+            cpu_offload=False,
+    )
+    # else:
+    #     strategy = "auto"
 
     today = datetime.today().strftime("%Y-%m-%d_%H-%M-%S")
     run_name = f"seed{args.seed}_{today}"
@@ -79,10 +79,10 @@ def setup():
                       )
     fabric.print(f"Training args in setup {args}")
 
-    if args.num_nodes > 1:
-        main(fabric, args)
-    else:
-        fabric.launch(main, args)
+    # if args.num_nodes > 1:
+    main(fabric, args)
+    # else:
+    #     fabric.launch(main, args)
 
 
 def main(fabric, args):

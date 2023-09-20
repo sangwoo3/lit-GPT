@@ -91,10 +91,16 @@ def process(source_path: Path,
     # print(next(iter(tokenized_dataset)))
     print(tokenized_dataset[0])
     print(f"[finished tokenize] elapsed: {(t1-t0)*1000}sec")
-    n_ds_train = len(tokenized_dataset['train'])
-    print(f"train dataset size: {n_ds_train}")
-    n_ds_valid = len(tokenized_dataset['valid'])
-    print(f"valid dataset size: {n_ds_valid}")
+    print(f"train dataset size: {len(tokenized_dataset['train'])}")
+    print(f"valid dataset size: {len(tokenized_dataset['valid'])}")
+
+    n_tk_train, n_tk_valid = 0, 0
+    for tk in tqdm(tokenized_dataset['train'], desc='train'):
+        n_tk_train += len(tk['input_ids'])
+    for tk in tqdm(tokenized_dataset['valid'], desc='valid'):
+        n_tk_valid += len(tk['input_ids'])
+    print(f"total token count: train-{n_tk_train}, valid-{n_tk_valid}")
+
 
     # n_ds, n_tk = 0, 0
     # for tk in tokenized_dataset:
@@ -113,8 +119,8 @@ def process(source_path: Path,
     # shuffled_ds_train = shuffled_tk_dataset.skip(n_val)
     # shuffled_ds_valid = shuffled_tk_dataset.take(n_val)
 
-    chunk_size_train = n_ds_train // n_train_files // (block_size + 1) * (block_size + 1)
-    chunk_size_valid = n_ds_valid // n_valid_files // (block_size + 1) * (block_size + 1)
+    chunk_size_train = n_tk_train // n_train_files // (block_size + 1) * (block_size + 1)
+    chunk_size_valid = n_tk_valid // n_valid_files // (block_size + 1) * (block_size + 1)
     print(f"chunk size: train-{chunk_size_train}, valid-{chunk_size_valid}")
 
     destination_path.mkdir(parents=True, exist_ok=True)

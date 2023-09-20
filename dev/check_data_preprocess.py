@@ -1,8 +1,16 @@
+import sys
+from pathlib import Path
 from datasets import load_dataset
 from transformers import AutoTokenizer
 
 from functools import partial
 from tqdm import tqdm
+import numpy as np
+
+wd = Path(__file__).parent.parent.resolve()
+sys.path.append(str(wd))
+
+import lit_gpt.packed_dataset as packed_dataset
 
 tokenizer = AutoTokenizer.from_pretrained('meta-llama/Llama-2-7b-hf')
 bos_id = tokenizer.bos_token_id
@@ -21,6 +29,27 @@ def process_data(data, tokenizer, bos=False, eos=False):
         input_ids = input_ids + [eos_id]
     data["input_ids"] = input_ids
     return data
+
+
+def build_packed_data(destination_path, prefix, chunk_size, dataset):
+    builder = packed_dataset.PackedDatasetBuilder(
+            outdir=destination_path,
+            prefix=prefix,
+            chunk_size=chunk_size,
+            sep_token=tokenizer.eos_id,
+            dtype="auto",
+            vocab_size=tokenizer.vocab_size,
+    )
+
+    num_tokens = 0
+    for td in tqdm(dataset):
+        builder.add_array(np.array(td["input_ids"], dtype=builder.dtype))
+        num_tokens += len(td["input_ids"])
+    print(f"[finished adding to builder array] - prifix: {prefix}")
+    print(f"total processed tokens: {num_tokens}")
+
+    builder.write_reminder()
+    print("[finished writing to files]")
 
 
 data_stream = load_dataset('json', data_files='/data2/swcho_data/code/lit-GPT/data/cnn_sample.jsonl',
@@ -57,6 +86,14 @@ print(f'[train] iteration is done: {ii} iter / {n_tk} tokens')
 
 ii = len(tk_dataset['validation'])
 print(f"total number of valid instance: {ii}")
+
+block_size = 512
+
+chunk_size_train = len(tk_dataset['train']) // 4 // block_size * block_size
+destination_path = Path('/data2/swcho_data/code/lit-GPT/data/cnndm')
+destination_path.mkdir(parents=True, exist_ok=True)
+build_packed_data(destination_path, 'cnndm-train',
+                  chunk_size_train, tk_dataset['train'])
 
 # shuffled_tk_dataset = tk_dataset.shuffle(buffer_size=ii+1, seed=42)
 # train_ds = shuffled_tk_dataset.skip(100)

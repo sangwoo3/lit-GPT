@@ -9,7 +9,7 @@
     "GPUName":"A100PRO",
     "cuda_version":"11.0",
     "is_elasticity":false,
-    "exec_start_in_all_mpi_pods":true,
+    "exec_start_in_all_mpi_pods":false,
     "enable_rdma":false,
     "rdma_in_same_module":false,
     "start_cmd":"bash /apdcephfs/share_300000800/user/swcho/code/lit-GPT/jizhi/pretrain_retnet_multinode.sh",

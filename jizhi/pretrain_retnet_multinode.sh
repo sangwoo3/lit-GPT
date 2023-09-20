@@ -62,12 +62,13 @@ export HF_DATASETS_CACHE=${PROJ_DIR}/.cache/
 export TRANSFORMERS_CACHE=${PROJ_DIR}/.cache/
 
 LAUNCH_ARGS="
+             --devices ${WORLD_SIZE} \
+             --num_nodes ${HOST_NUM} \
              --node_rank $NODE_RANK \
              --main_address $MASTER_ADDR \
              --main_port $MASTER_PORT \
              "
-#                          --devices ${GPUS_PER_NODE} \
-#             --num_nodes ${HOST_NUM} \
+
 #             --accelerator cuda \
 #              --strategy fsdp \
 #              --precision bf16-mixed \
@@ -83,9 +84,9 @@ TRAIN_ARGS="--exp_name ${EXP_NAME} \
 --eval_iters 1 \
 --log_interval 2 \
 --micro_batch_size 4 \
---batch_size 8 \
---devices ${GPUS_PER_NODE} \
---num_nodes ${HOST_NUM}"
+--batch_size 8"
+#--devices ${GPUS_PER_NODE} \
+#--num_nodes ${HOST_NUM}"
 
 ALL_ARGS="${TRAIN_ARGS} \
           ${DATA_ARGS}"

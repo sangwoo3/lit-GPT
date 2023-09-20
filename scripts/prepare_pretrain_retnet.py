@@ -113,7 +113,7 @@ def process(source_path: Path,
     # shuffled_ds_train = shuffled_tk_dataset.skip(n_val)
     # shuffled_ds_valid = shuffled_tk_dataset.take(n_val)
 
-    chunk_size_train = (n_ds_train - n_ds_valid) // n_train_files // (block_size + 1) * (block_size + 1)
+    chunk_size_train = n_ds_train // n_train_files // (block_size + 1) * (block_size + 1)
     chunk_size_valid = n_ds_valid // n_valid_files // (block_size + 1) * (block_size + 1)
     print(f"chunk size: train-{chunk_size_train}, valid-{chunk_size_valid}")
 

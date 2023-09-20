@@ -11,7 +11,7 @@ def arg_loader():
     parser.add_argument("--save_interval", type=int, default=2500)
     parser.add_argument("--eval_interval", type=int, default=1250)
     parser.add_argument("--log_interval", type=int, default=160)
-    parser.add_argument("--eval_iters", type=int, default=1)
+    parser.add_argument("--eval_iters", type=int, default=1, help="validation iteration")
 
     # Hyper-parameters
     parser.add_argument("--learning_rate", type=float, default=3e-4)
@@ -28,8 +28,8 @@ def arg_loader():
     parser.add_argument("--precision", type=str)
 
     parser.add_argument("--gradient_clip_val", type=float, default=1.0)  # avoid fp16 nan
-    parser.add_argument("--devices", type=int, default=1)
-    parser.add_argument("--num_nodes", type=int, default=1)
+    # parser.add_argument("--devices", type=int, default=1)
+    # parser.add_argument("--num_nodes", type=int, default=1)
     parser.add_argument("--num_workers", type=int, default=2)
 
     parser.add_argument("--train_data_dir", type=str)

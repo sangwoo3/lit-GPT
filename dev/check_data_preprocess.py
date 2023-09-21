@@ -38,13 +38,13 @@ splitter = nltk.tokenize.punkt.PunktSentenceTokenizer(
 
 
 def split_data(data):
-    sentences = splitter.tokenize(data['article'])
+    sentences = splitter.tokenize(data["article"])
     return {'sentences': sentences}
 
 
 def process_data(data, tokenizer, bos=False, eos=False):
     input_ids = []
-    for sentence in data['sentences']:
+    for sentence in data["sentences"]:
         sentence_ids = tokenizer(sentence, truncation=False, add_special_tokens=False)["input_ids"]
         if len(sentence_ids) > 0:
             input_ids.append(sentence_ids)

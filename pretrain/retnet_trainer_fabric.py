@@ -27,16 +27,6 @@ from lit_gpt.speed_monitor import estimate_flops, measure_flops
 from lit_gpt.utils import chunked_cross_entropy, get_default_supported_precision, num_parameters, step_csv_logger
 from lightning.fabric.loggers import TensorBoardLogger
 
-data_config = [
-    # ("arxiv", 2.5),
-    ("book", 4.5),
-    # ("c4", 15.0),
-    # ("cc", 67.0),
-    # ("github", 4.5),
-    # ("stackexchange", 2.0),
-    ("wikipedia", 4.5),
-]
-
 
 def setup():
     # training arguments
@@ -50,16 +40,16 @@ def setup():
 
     args.out_dir = Path(args.out_dir) / args.exp_name
 
-    if args.devices > 1:
-        strategy = FSDPStrategy(
-                auto_wrap_policy={DecoderLayer},
-                activation_checkpointing_policy={DecoderLayer},
-                state_dict_type="full",
-                limit_all_gathers=True,
-                cpu_offload=False,
-        )
-    else:
-        strategy = "auto"
+    # if args.devices > 1:
+    strategy = FSDPStrategy(
+            auto_wrap_policy={DecoderLayer},
+            activation_checkpointing_policy={DecoderLayer},
+            state_dict_type="full",
+            limit_all_gathers=True,
+            cpu_offload=False,
+    )
+    # else:
+    #     strategy = "auto"
 
     today = datetime.today().strftime("%Y-%m-%d_%H-%M-%S")
     run_name = f"seed{args.seed}_{today}"
@@ -69,14 +59,16 @@ def setup():
             name=run_name
     )
     # logger = step_csv_logger("out", args.exp_name, flush_logs_every_n_steps=args.log_interval)
-    fabric = L.Fabric(devices=args.devices,
+    fabric = L.Fabric(
+                      # devices=args.devices,
+                      # num_nodes=args.num_nodes,
                       strategy=strategy,
                       precision=precision,
                       loggers=logger,
                       accelerator='gpu',
-                      num_nodes=args.num_nodes,
                       )
-    fabric.launch(main, args)
+    main(fabric, args)
+    # fabric.launch(main, args)
 
 
 def main(fabric, args):
@@ -101,6 +93,7 @@ def main(fabric, args):
             fabric=fabric,
             train_data_dir=Path(args.train_data_dir),
             val_data_dir=Path(args.val_data_dir) if args.val_data_dir else None,
+            prefix=args.prefix,
             seed=(args.seed + fabric.global_rank),
     )
     if val_dataloader is None:
@@ -109,7 +102,6 @@ def main(fabric, args):
         train_dataloader, val_dataloader = fabric.setup_dataloaders(train_dataloader, val_dataloader)
     #     fabric.print(f"val_dataloader len: {len(val_dataloader)}")
     # fabric.print(f"train_dataloader len: {len(train_dataloader)}")
-
 
     fabric.seed_everything(args.seed)  # same seed for every process to init model (FSDP)
 
@@ -266,42 +258,35 @@ def ppl(loss):
 
 
 def create_dataloader(
-        batch_size: int, block_size: int, data_dir: Path, fabric, shuffle: bool = True, seed: int = 12345
+        batch_size: int, block_size: int, data_dir: Path, fabric, prefix: str,
+        shuffle: bool = True, seed: int = 12345,
 ) -> DataLoader:
-    datasets = []
-    for prefix, _ in data_config:
-        filenames = glob.glob(str(data_dir / f"{prefix}*"))
-        fabric.print(f"{filenames}, {data_dir}, {data_config}, {prefix}")
-        dataset = PackedDataset(
-                filenames,
-                n_chunks=1,
-                block_size=block_size,
-                shuffle=shuffle,
-                seed=seed,
-                num_processes=fabric.world_size,
-                process_rank=fabric.global_rank,
-        )
-        datasets.append(dataset)
+    filenames = glob.glob(str(data_dir / f"{prefix}*"))
+    fabric.print(f"found {len(filenames)} files in {data_dir} with {prefix}")
+    dataset = PackedDataset(
+            filenames,
+            n_chunks=1,
+            block_size=block_size,
+            shuffle=shuffle,
+            seed=seed,
+            num_processes=fabric.world_size,
+            process_rank=fabric.global_rank,
+    )
 
-    if not datasets:
+    if not len(filenames):
         raise RuntimeError(
-                f"No data found at {data_dir}. Make sure you ran prepare_redpajama.py to create the dataset."
+                f"No data found at {data_dir}."
         )
 
-    weights = [weight for _, weight in data_config]
-    sum_weights = sum(weights)
-    weights = [el / sum_weights for el in weights]
-
-    combined_dataset = CombinedDataset(datasets=datasets, seed=seed, weights=weights)
-
-    return DataLoader(combined_dataset, batch_size=batch_size, shuffle=False, pin_memory=True)
+    return DataLoader(dataset, batch_size=batch_size, shuffle=False, pin_memory=True)
 
 
 def create_dataloaders(
         batch_size: int,
         block_size: int,
         fabric,
-        train_data_dir: Path = Path("data/redpajama_sample"),
+        prefix: str,
+        train_data_dir: Path = Path("data"),
         val_data_dir: Optional[Path] = None,
         seed: int = 12345,
 ) -> Tuple[DataLoader, DataLoader]:
@@ -312,6 +297,7 @@ def create_dataloaders(
             block_size=effective_block_size,
             fabric=fabric,
             data_dir=train_data_dir,
+            prefix=f"{prefix}-train",
             shuffle=True,
             seed=seed,
     )
@@ -321,6 +307,7 @@ def create_dataloaders(
                 block_size=effective_block_size,
                 fabric=fabric,
                 data_dir=val_data_dir,
+                prefix=f"{prefix}-val",
                 shuffle=False,
                 seed=seed,
         )

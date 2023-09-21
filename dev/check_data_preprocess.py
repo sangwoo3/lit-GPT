@@ -47,8 +47,9 @@ def split_data(data, splitter):
     sentences = splitter.tokenize(text)
     assert isinstance(sentences, list), print(type(sentences))
     # sentences = [sent if isinstance(sent, str) else str(sent) for sent in sentences]
+    data['sentences'] = sentences
 
-    return {'sentences': sentences}
+    return data
 
 
 def process_data(data, tokenizer, bos=False, eos=False):
@@ -110,7 +111,7 @@ data_stream = data_stream.map(process_ds_split,
                               batched=True,
                               desc='Splitting...')
 print(len(data_stream['train']))
-print(data_stream['train'][:10])
+print(data_stream['train']['sentences'][:10])
 
 print(f'bos token: {tokenizer.bos_token} {tokenizer.bos_token_id}')
 process_ds = partial(process_data, tokenizer=tokenizer, bos=True)

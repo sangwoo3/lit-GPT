@@ -52,8 +52,8 @@ def split_data(data, splitter):
 
 def process_data(data, tokenizer, bos=False, eos=False):
     input_ids = []
-    print(type(data["sentences"]))
     for sentence in data["sentences"]:
+        sentence = ' '.join(sentence) if isinstance(sentence, list) else sentence
         sentence_ids = tokenizer(sentence, truncation=False, add_special_tokens=False)["input_ids"]
         if len(sentence_ids) > 0:
             input_ids.append(sentence_ids)

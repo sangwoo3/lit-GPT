@@ -45,8 +45,8 @@ def split_data(data, splitter):
     else:
         text = data["article"]
     sentences = splitter.tokenize(text)
-    assert isinstance(sentences, list), print(type(sentences))
-    # sentences = [sent if isinstance(sent, str) else str(sent) for sent in sentences]
+    # assert isinstance(sentences, list), print(type(sentences))
+    sentences = [sent if isinstance(sent, str) else str(sent) for sent in sentences]
     data['sentences'] = sentences
 
     return data
@@ -54,8 +54,6 @@ def split_data(data, splitter):
 
 def process_data(data, tokenizer, bos=False, eos=False):
     input_ids = []
-    if not isinstance(data["sentences"], list):
-        print(type(data["sentences"]))
     for sentence in data["sentences"]:
         # sentence = ' '.join(sentence) if isinstance(sentence, list) else sentence
         sentence_ids = tokenizer(sentence, truncation=False, add_special_tokens=False)["input_ids"]
@@ -70,6 +68,8 @@ def process_data(data, tokenizer, bos=False, eos=False):
         if eos_id is None:
             raise NotImplementedError("This tokenizer does not defined a eos token")
         input_ids = input_ids + [eos_id]
+    if not isinstance(input_ids, list):
+        print(type(input_ids), input_ids)
     data["input_ids"] = input_ids
     return data
 
@@ -106,7 +106,7 @@ data_stream = data_stream.train_test_split(test_size=0.1, shuffle=True)
 data_stream['validation'] = data_stream.pop('test')
 print(len(data_stream['train']))
 
-process_ds_split = partial(split_data, splitter=splitter)
+process_ds_split = partial(split_data, splitter=splitter, bos=True)
 data_stream = data_stream.map(process_ds_split,
                               remove_columns=data_stream['train'].column_names,
                               num_proc=2,

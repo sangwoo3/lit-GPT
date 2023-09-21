@@ -56,6 +56,30 @@ splitter = nltk.tokenize.punkt.PunktSentenceTokenizer(
 )
 
 
+def split_and_tokenize_data(data, tokenizer, bos=False, eos=False):
+    if isinstance(data["text"], list):
+        text = ' '.join(data["text"])
+    else:
+        text = data["text"]
+
+    doc_ids = []
+    for sentence in splitter.tokenize(text):
+        sentence_ids = tokenizer(sentence, truncation=False, add_special_tokens=False)["input_ids"]
+        if len(sentence_ids) > 0:
+            doc_ids.extend(sentence_ids)
+    if bos:
+        if bos_id is None:
+            raise NotImplementedError("This tokenizer does not defined a bos token")
+        doc_ids = [bos_id] + doc_ids
+    if eos:
+        if eos_id is None:
+            raise NotImplementedError("This tokenizer does not defined a eos token")
+        doc_ids = doc_ids + [eos_id]
+    data["input_ids"] = doc_ids
+    data["len_ids"] = len(doc_ids)
+    return data
+
+
 def split_data(data):
     if isinstance(data["text"], list):
         text = ' '.join(data["text"])
@@ -66,7 +90,7 @@ def split_data(data):
     return data
 
 
-def process_data(data, tokenizer, bos=False, eos=False):
+def tokenize_data(data, tokenizer, bos=False, eos=False):
     doc_ids = []
     for sentence in data['sentences']:
         sentence_ids = tokenizer(sentence, truncation=False, add_special_tokens=False)["input_ids"]
@@ -161,6 +185,17 @@ def process(source_path: Path,
 
     # HF tokenize
     t0 = time.time()
+    process_dataset = partial(split_and_tokenize_data, tokenizer=tokenizer, bos=True)
+    merged_dataset = merged_dataset.map(process_dataset,
+                                        remove_columns=merged_dataset['train'].column_names,
+                                        num_proc=num_proc,
+                                        # batched=True,
+                                        desc='Splitting_Tokenizing...')
+    t1 = time.time()
+    print(f"[finished split-N-tokenize] elapsed: {t1 - t0}sec")
+
+    '''
+    t0 = time.time()
     merged_dataset = merged_dataset.map(split_data,
                                         remove_columns=merged_dataset['train'].column_names,  # ["text"],
                                         num_proc=num_proc,
@@ -170,7 +205,7 @@ def process(source_path: Path,
     print(f"[finished splitting] elapsed: {t1 - t0}sec")    # 2.41 hrs
 
     t0 = time.time()
-    process_dataset = partial(process_data, tokenizer=tokenizer, bos=True)
+    process_dataset = partial(tokenize_data, tokenizer=tokenizer, bos=True)
     merged_dataset = merged_dataset.map(process_dataset,
                                         remove_columns=["sentences"],
                                         num_proc=num_proc,
@@ -179,6 +214,8 @@ def process(source_path: Path,
     t1 = time.time()
     # print(next(iter(merged_dataset)))
     print(f"[finished tokenize] elapsed: {t1 - t0}sec")    # 1.11 hrs
+    '''
+
     print(merged_dataset['train'][100])
 
     dest_tokenized_path = destination_path / 'tokenized'

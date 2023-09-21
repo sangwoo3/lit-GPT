@@ -106,7 +106,7 @@ data_stream = data_stream.train_test_split(test_size=0.1, shuffle=True)
 data_stream['validation'] = data_stream.pop('test')
 print(len(data_stream['train']))
 
-process_ds_split = partial(split_data, splitter=splitter, bos=True)
+process_ds_split = partial(split_data, splitter=splitter)
 data_stream = data_stream.map(process_ds_split,
                               remove_columns=data_stream['train'].column_names,
                               num_proc=2,

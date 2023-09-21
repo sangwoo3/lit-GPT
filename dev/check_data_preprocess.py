@@ -58,6 +58,7 @@ def process_data(data, tokenizer, bos=False, eos=False):
         # sentence = ' '.join(sentence) if isinstance(sentence, list) else sentence
         sentence_ids = tokenizer(sentence, truncation=False, add_special_tokens=False)["input_ids"]
         if len(sentence_ids) > 0:
+            print(sentence_ids)
             input_ids.append(sentence_ids)
     # input_ids = tokenizer(data["article"], truncation=False, add_special_tokens=False)["input_ids"]
     if bos:

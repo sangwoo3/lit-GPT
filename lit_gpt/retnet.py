@@ -78,7 +78,7 @@ class RetNet(nn.Module):
             self.config.decoder_ffn_embed_dim = 16384
             self.config.decoder_layers = 64
             self.config.decoder_retention_heads = 32
-        print('in model config with args', self.config)
+        print('in model config with args', self.config.__dict__)
         self.config.block_size = self.args.block_size
         self.config.n_layer = self.config.decoder_layers
         self.config.n_embd = self.config.decoder_embed_dim

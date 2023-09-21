@@ -33,7 +33,7 @@ class RetNet(nn.Module):
         self.tokenizer = AutoTokenizer.from_pretrained(self.tokenizer_dir)
 
         self.config = RetNetConfig()
-        # self.config.override(self.args)
+        self.config.override(vars(self.args))
         self.config.vocab_size = len(self.tokenizer)
 
         self.build_model()
@@ -78,6 +78,7 @@ class RetNet(nn.Module):
             self.config.decoder_ffn_embed_dim = 16384
             self.config.decoder_layers = 64
             self.config.decoder_retention_heads = 32
+        print('in model config with args', self.config)
         self.config.block_size = self.args.block_size
         self.config.n_layer = self.config.decoder_layers
         self.config.n_embd = self.config.decoder_embed_dim

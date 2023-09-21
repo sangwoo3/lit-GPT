@@ -57,7 +57,7 @@ splitter = nltk.tokenize.punkt.PunktSentenceTokenizer(
 
 
 def split_data(data):
-    sentences = splitter.tokenize(data)
+    sentences = splitter.tokenize(data['text'])
     return {'sentences': sentences}
 
 

@@ -82,6 +82,7 @@ def process_data(data, tokenizer, bos=False, eos=False):
             raise NotImplementedError("This tokenizer does not defined a eos token")
         doc_ids = doc_ids + [eos_id]
     data["input_ids"] = doc_ids
+    data["len_ids"] = len(doc_ids)
     return data
 
 
@@ -166,7 +167,7 @@ def process(source_path: Path,
                                         # batched=True,
                                         desc='Splitting...')
     t1 = time.time()
-    print(f"[finished splitting] elapsed: {(t1 - t0) * 1000}sec")
+    print(f"[finished splitting] elapsed: {t1 - t0}sec")    # 2.41 hrs
 
     t0 = time.time()
     process_dataset = partial(process_data, tokenizer=tokenizer, bos=True)
@@ -177,16 +178,22 @@ def process(source_path: Path,
                                         desc='Tokenizing...')
     t1 = time.time()
     # print(next(iter(merged_dataset)))
-    print(f"[finished tokenize] elapsed: {(t1 - t0) * 1000}sec")
+    print(f"[finished tokenize] elapsed: {t1 - t0}sec")    # 1.11 hrs
     print(merged_dataset['train'][100])
 
-    n_tk_train, n_tk_valid = 0, 0
-    for tk in tqdm(merged_dataset['train'], desc='train size...'):
-        n_tk_train += len(tk['input_ids'])
-    for tk in tqdm(merged_dataset['valid'], desc='valid size...'):
-        n_tk_valid += len(tk['input_ids'])
-    print(f"[train] dataset size: {len(merged_dataset['train'])} / total token count: {n_tk_train}")
-    print(f"[valid] dataset size: {len(merged_dataset['valid'])} / total token count: {n_tk_valid}")
+    dest_tokenized_path = destination_path / 'tokenized'
+    dest_tokenized_path.mkdir(parents=True, exist_ok=True)
+    merged_dataset.save_to_disk(dest_tokenized_path)
+    print(f"huggingface dataset is saved: {str(dest_tokenized_path)}")  # in case of error on packed data
+
+    n_tk_train = np.sum(merged_dataset["train"]["len_ids"], dtype=np.uint64)
+    n_tk_valid = np.sum(merged_dataset["valid"]["len_ids"], dtype=np.uint64)
+    # for tk in tqdm(merged_dataset['train'], desc='train size...'):
+    #     n_tk_train += len(tk['input_ids'])
+    # for tk in tqdm(merged_dataset['valid'], desc='valid size...'):
+    #     n_tk_valid += len(tk['input_ids'])
+    print(f"[train] dataset size: {len(merged_dataset['train'])} , total token count: {n_tk_train}")
+    print(f"[valid] dataset size: {len(merged_dataset['valid'])} , total token count: {n_tk_valid}")
 
     # n_ds, n_tk = 0, 0
     # for tk in merged_dataset:
@@ -210,10 +217,6 @@ def process(source_path: Path,
     print(f"chunk size: train-{chunk_size_train}, valid-{chunk_size_valid}")
 
     destination_path.mkdir(parents=True, exist_ok=True)
-    dest_tokenized_path = destination_path / 'tokenized'
-    dest_tokenized_path.mkdir(parents=True, exist_ok=True)
-    merged_dataset.save_to_disk(dest_tokenized_path)
-    print(f"huggingface dataset is saved: {str(dest_tokenized_path)}")      # in case of error on packed data
 
     build_packed_data(destination_path, prefix + '-train',
                       chunk_size_train, merged_dataset['train'])

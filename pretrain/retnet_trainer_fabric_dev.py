@@ -80,9 +80,9 @@ def setup():
     fabric.print(f"Training args in setup {args}")
 
     # if args.num_nodes > 1:
-    main(fabric, args)
+    # main(fabric, args)
     # else:
-    #     fabric.launch(main, args)
+    fabric.launch(main, args)
 
 
 def main(fabric, args):

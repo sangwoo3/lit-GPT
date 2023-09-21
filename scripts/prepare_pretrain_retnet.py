@@ -12,6 +12,7 @@ from functools import partial
 from transformers import AutoTokenizer
 from datasets import load_dataset
 import multiprocessing
+import nltk
 
 # support running without installing as a package
 wd = Path(__file__).parent.parent.resolve()
@@ -21,12 +22,13 @@ import lit_gpt.packed_dataset as packed_dataset
 from lit_gpt import Tokenizer
 
 tokenizer_dir = "/apdcephfs/share_300000800/user/swcho/huggingface_models/"
-if False:
+if True:
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_dir)
     bos_id = tokenizer.bos_token_id
     eos_id = tokenizer.eos_token_id
 else:
     tokenizer = Tokenizer(Path(tokenizer_dir))
+    eos_id = tokenizer.eos_id
 
 n_train_files = 512
 n_valid_files = 32
@@ -35,18 +37,46 @@ n_tk_train_est = 100000000000
 n_tk_valid_est = 10000000
 
 
+class CustomLanguageVars(nltk.tokenize.punkt.PunktLanguageVars):
+    _period_context_fmt = r"""
+        \S*                          # some word material
+        %(SentEndChars)s             # a potential sentence ending
+        \s*                       #  <-- THIS is what I changed
+        (?=(?P<after_tok>
+            %(NonWord)s              # either other punctuation
+            |
+            (?P<next_tok>\S+)     #  <-- Normally you would have \s+ here
+        ))"""
+
+
+nltk_splitter = nltk.load('tokenizers/punkt/english.pickle')
+splitter = nltk.tokenize.punkt.PunktSentenceTokenizer(
+        train_text=nltk_splitter._params,
+        lang_vars=CustomLanguageVars()
+)
+
+
+def split_data(data):
+    sentences = splitter.tokenize(data)
+    return {'sentences': sentences}
+
+
 def process_data(data, tokenizer, bos=False, eos=False):
-    input_ids = tokenizer(data["text"], truncation=False, add_special_tokens=False)["input_ids"]
+    doc_ids = []
+    for sentence in data['sentences']:
+        sentence_ids = tokenizer(sentence, truncation=False, add_special_tokens=False)["input_ids"]
+        if len(sentence_ids) > 0:
+            doc_ids.append(sentence_ids)
+    # doc_ids = tokenizer(data["text"], truncation=False, add_special_tokens=False)["input_ids"]
     if bos:
         if bos_id is None:
             raise NotImplementedError("This tokenizer does not defined a bos token")
-        input_ids = [bos_id] + input_ids
+        doc_ids = [bos_id] + doc_ids
     if eos:
         if eos_id is None:
             raise NotImplementedError("This tokenizer does not defined a eos token")
-        input_ids = input_ids + [eos_id]
-    data["input_ids"] = input_ids
-    return data
+        doc_ids = doc_ids + [eos_id]
+    return {"input_ids": doc_ids}
 
 
 def build_packed_data(destination_path, prefix, chunk_size, dataset):
@@ -54,17 +84,17 @@ def build_packed_data(destination_path, prefix, chunk_size, dataset):
             outdir=destination_path,
             prefix=prefix,
             chunk_size=chunk_size,
-            sep_token=tokenizer.eos_id,
+            sep_token=eos_id,
             dtype="auto",
             vocab_size=tokenizer.vocab_size,
     )
 
-    num_tokens = 0
+    # num_tokens = 0
     for td in tqdm(dataset):
         builder.add_array(np.array(td["input_ids"], dtype=builder.dtype))
-        num_tokens += len(td["input_ids"])
+        # num_tokens += len(td["input_ids"])
     print(f"[finished adding to builder array] - prifix: {prefix}")
-    print(f"total processed tokens: {num_tokens}")
+    # print(f"total processed tokens: {num_tokens}")
 
     builder.write_reminder()
     print("[finished writing to files]")
@@ -108,6 +138,10 @@ def process(source_path: Path,
     merged_dataset = merged_dataset.train_test_split(test_size=0.0001, shuffle=True)
     merged_dataset['valid'] = merged_dataset.pop('test')
 
+    '''
+    # sentencepiece tokenize
+    destination_path.mkdir()
+    
     chunk_size_train = n_tk_train_est // n_train_files // (block_size + 1) * (block_size + 1)
     chunk_size_valid = n_tk_valid_est // n_valid_files // (block_size + 1) * (block_size + 1)
     print(f"chunk size: train-{chunk_size_train}, valid-{chunk_size_valid}")
@@ -116,30 +150,39 @@ def process(source_path: Path,
                          chunk_size_train, merged_dataset['train'])
     build_packed_data_sp(destination_path, prefix + '-valid',
                          chunk_size_train, merged_dataset['valid'])
-
     '''
+
     # HF tokenize
+    t0 = time.time()
+    merged_dataset = merged_dataset.map(split_data,
+                                        remove_columns=["text"],
+                                        num_proc=num_proc,
+                                        batched=True,
+                                        desc='Splitting...')
+    t1 = time.time()
+    print(f"[finished splitting] elapsed: {(t1 - t0) * 1000}sec")
+
     t0 = time.time()
     process_dataset = partial(process_data, tokenizer=tokenizer, bos=True)
     tokenized_dataset = merged_dataset.map(process_dataset,
-                                           remove_columns=["text"],
+                                           remove_columns=["sentences"],
                                            num_proc=num_proc,
                                            batched=True,
                                            desc='Tokenizing...')
     t1 = time.time()
     # print(next(iter(tokenized_dataset)))
     print(tokenized_dataset[0])
-    print(f"[finished tokenize] elapsed: {(t1-t0)*1000}sec")
+    print(f"[finished tokenize] elapsed: {(t1 - t0) * 1000}sec")
     print(f"train dataset size: {len(tokenized_dataset['train'])}")
     print(f"valid dataset size: {len(tokenized_dataset['valid'])}")
 
     n_tk_train, n_tk_valid = 0, 0
-    for tk in tqdm(tokenized_dataset['train'], desc='train'):
+    for tk in tqdm(tokenized_dataset['train'], desc='train size...'):
         n_tk_train += len(tk['input_ids'])
-    for tk in tqdm(tokenized_dataset['valid'], desc='valid'):
+    for tk in tqdm(tokenized_dataset['valid'], desc='valid size...'):
         n_tk_valid += len(tk['input_ids'])
     print(f"total token count: train-{n_tk_train}, valid-{n_tk_valid}")
-    
+
     # n_ds, n_tk = 0, 0
     # for tk in tokenized_dataset:
     #     n_ds += 1
@@ -168,7 +211,6 @@ def process(source_path: Path,
 
     build_packed_data(destination_path, prefix + '-val',
                       chunk_size_valid, tokenized_dataset['valid'])
-    '''
 
 
 def prepare(

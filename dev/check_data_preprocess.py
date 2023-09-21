@@ -6,6 +6,7 @@ from transformers import AutoTokenizer
 from functools import partial
 from tqdm import tqdm
 import numpy as np
+import nltk
 
 wd = Path(__file__).parent.parent.resolve()
 sys.path.append(str(wd))
@@ -17,8 +18,37 @@ bos_id = tokenizer.bos_token_id
 eos_id = tokenizer.eos_token_id
 
 
+class CustomLanguageVars(nltk.tokenize.punkt.PunktLanguageVars):
+    _period_context_fmt = r"""
+        \S*                          # some word material
+        %(SentEndChars)s             # a potential sentence ending
+        \s*                       #  <-- THIS is what I changed
+        (?=(?P<after_tok>
+            %(NonWord)s              # either other punctuation
+            |
+            (?P<next_tok>\S+)     #  <-- Normally you would have \s+ here
+        ))"""
+
+
+nltk_splitter = nltk.load('tokenizers/punkt/english.pickle')
+splitter = nltk.tokenize.punkt.PunktSentenceTokenizer(
+        train_text=nltk_splitter._params,
+        lang_vars=CustomLanguageVars()
+)
+
+
+def split_data(data):
+    sentences = splitter.tokenize(data['article'])
+    return {'sentences': sentences}
+
+
 def process_data(data, tokenizer, bos=False, eos=False):
-    input_ids = tokenizer(data["article"], truncation=False, add_special_tokens=False)["input_ids"]
+    input_ids = []
+    for sentence in data['sentences']:
+        sentence_ids = tokenizer(sentence, truncation=False, add_special_tokens=False)["input_ids"]
+        if len(sentence_ids) > 0:
+            input_ids.append(sentence_ids)
+    # input_ids = tokenizer(data["article"], truncation=False, add_special_tokens=False)["input_ids"]
     if bos:
         if bos_id is None:
             raise NotImplementedError("This tokenizer does not defined a bos token")
@@ -62,11 +92,17 @@ print(data_stream[0])
 data_stream = data_stream.train_test_split(test_size=0.1, shuffle=True)
 data_stream['validation'] = data_stream.pop('test')
 
+data_stream = data_stream.map(split_data,
+                              # remove_columns=["text"],
+                              num_proc=2,
+                              batched=True,
+                              desc='Splitting...')
+
 print(f'bos token: {tokenizer.bos_token} {tokenizer.bos_token_id}')
 process_ds = partial(process_data, tokenizer=tokenizer, bos=True)
 # original_columns = list(data_stream.features.keys())  # error
 tk_dataset = data_stream.map(process_ds, remove_columns=["article", "highlights", "id"], num_proc=10, desc='cnndm')
-#,
+# ,
 # remove_columns=original_columns)
 # tk_dataset_updated = tk_dataset.rename_columns(["article", "highlights", "id"])
 # print(list(tk_dataset.take(1)))

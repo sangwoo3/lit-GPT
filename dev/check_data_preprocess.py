@@ -93,7 +93,7 @@ data_stream = data_stream.train_test_split(test_size=0.1, shuffle=True)
 data_stream['validation'] = data_stream.pop('test')
 
 data_stream = data_stream.map(split_data,
-                              remove_columns=data_stream.column_names,
+                              remove_columns=data_stream['train'].column_names,
                               num_proc=2,
                               batched=True,
                               desc='Splitting...')

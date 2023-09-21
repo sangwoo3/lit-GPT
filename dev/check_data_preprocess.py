@@ -39,14 +39,14 @@ splitter = nltk.tokenize.punkt.PunktSentenceTokenizer(
 
 def split_data(data, splitter):
     # print(data)
-    if not isinstance(data["article"], str):
-        print(type(data["article"]))
+    if isinstance(data["article"], list):
+        # print(type(data["article"]))
         text = ' '.join(data["article"])
     else:
         text = data["article"]
     sentences = splitter.tokenize(text)
     # assert isinstance(sentences, list), print(type(sentences))
-    sentences = [sent if isinstance(sent, str) else str(sent) for sent in sentences]
+    # sentences = [sent if isinstance(sent, str) else str(sent) for sent in sentences]
     data['sentences'] = sentences
 
     return data
@@ -122,7 +122,7 @@ process_ds = partial(process_data, tokenizer=tokenizer, bos=True)
 tk_dataset = data_stream.map(process_ds,
                              remove_columns=["sentences"],
                              num_proc=10,
-                             batched=True,
+                             # batched=True,
                              desc='cnndm')
 # ,
 # remove_columns=original_columns)

@@ -57,7 +57,7 @@ splitter = nltk.tokenize.punkt.PunktSentenceTokenizer(
 
 
 def split_data(data):
-    if not isinstance(data["text"], str):
+    if isinstance(data["text"], list):
         text = ' '.join(data["text"])
     else:
         text = data["text"]

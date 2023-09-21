@@ -122,7 +122,7 @@ process_ds = partial(process_data, tokenizer=tokenizer, bos=True)
 tk_dataset = data_stream.map(process_ds,
                              remove_columns=["sentences"],
                              num_proc=10,
-                             batched=True,
+                             # batched=True,
                              desc='cnndm')
 # ,
 # remove_columns=original_columns)

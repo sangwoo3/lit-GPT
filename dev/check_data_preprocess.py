@@ -111,7 +111,8 @@ data_stream = data_stream.map(process_ds_split,
                               batched=True,
                               desc='Splitting...')
 print(len(data_stream['train']))
-print(data_stream['train']['sentences'][:10])
+print(data_stream)
+print(data_stream['train']['sentences'][:50])
 
 print(f'bos token: {tokenizer.bos_token} {tokenizer.bos_token_id}')
 process_ds = partial(process_data, tokenizer=tokenizer, bos=True)

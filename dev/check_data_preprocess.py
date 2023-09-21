@@ -96,14 +96,18 @@ data_stream['validation'] = data_stream.pop('test')
 process_ds_split = partial(split_data, splitter=splitter)
 data_stream = data_stream.map(process_ds_split,
                               remove_columns=data_stream['train'].column_names,
-                              num_proc=2,
+                              # num_proc=2,
                               batched=True,
                               desc='Splitting...')
 
 print(f'bos token: {tokenizer.bos_token} {tokenizer.bos_token_id}')
 process_ds = partial(process_data, tokenizer=tokenizer, bos=True)
 # original_columns = list(data_stream.features.keys())  # error
-tk_dataset = data_stream.map(process_ds, remove_columns=["article", "highlights", "id"], num_proc=10, desc='cnndm')
+tk_dataset = data_stream.map(process_ds,
+                             remove_columns=["sentences"],
+                             num_proc=10,
+                             batched=True,
+                             desc='cnndm')
 # ,
 # remove_columns=original_columns)
 # tk_dataset_updated = tk_dataset.rename_columns(["article", "highlights", "id"])

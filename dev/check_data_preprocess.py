@@ -68,8 +68,8 @@ def process_data(data, tokenizer, bos=False, eos=False):
         if eos_id is None:
             raise NotImplementedError("This tokenizer does not defined a eos token")
         input_ids = input_ids + [eos_id]
-    if not isinstance(input_ids, list):
-        print(type(input_ids), input_ids)
+    # if not isinstance(input_ids, list):
+    #     print(type(input_ids), input_ids)
     data["input_ids"] = input_ids
     return data
 

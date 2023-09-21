@@ -122,7 +122,7 @@ process_ds = partial(process_data, tokenizer=tokenizer, bos=True)
 tk_dataset = data_stream.map(process_ds,
                              remove_columns=["sentences"],
                              num_proc=10,
-                             # batched=True,
+                             batched=True,
                              desc='cnndm')
 # ,
 # remove_columns=original_columns)
@@ -133,14 +133,14 @@ tk_dataset = data_stream.map(process_ds,
 # for tk in tk_dataset:
 #     ii += 1
 ii = len(tk_dataset['train'])
-print(f"total number of train instance: {ii}")
+# print(f"total number of train instance: {ii}")
 
 n_tk = 0
 for i, tk in enumerate(tqdm(tk_dataset['train'])):
     if i < 1:
         print(i, tk)
     n_tk += len(tk['input_ids'])
-print(f'[train] iteration is done: {ii} iter / {n_tk} tokens')
+print(f'[train] iteration is done: {ii} instances / {n_tk} tokens')
 
 ii = len(tk_dataset['validation'])
 print(f"total number of valid instance: {ii}")

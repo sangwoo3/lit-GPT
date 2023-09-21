@@ -70,7 +70,7 @@ def process_data(data, tokenizer, bos=False, eos=False):
     for sentence in data['sentences']:
         sentence_ids = tokenizer(sentence, truncation=False, add_special_tokens=False)["input_ids"]
         if len(sentence_ids) > 0:
-            doc_ids.append(sentence_ids)
+            doc_ids.extend(sentence_ids)
     # doc_ids = tokenizer(data["text"], truncation=False, add_special_tokens=False)["input_ids"]
     if bos:
         if bos_id is None:

@@ -46,7 +46,7 @@ def split_data(data, splitter):
         text = data["article"]
     sentences = splitter.tokenize(text)
     assert isinstance(sentences, list), print(type(sentences))
-    sentences = [sent if isinstance(sent, str) else str(sent) for sent in sentences]
+    # sentences = [sent if isinstance(sent, str) else str(sent) for sent in sentences]
 
     return {'sentences': sentences}
 
@@ -101,6 +101,7 @@ print(data_stream[0])
 
 data_stream = data_stream.train_test_split(test_size=0.1, shuffle=True)
 data_stream['validation'] = data_stream.pop('test')
+print(len(data_stream['train']))
 
 process_ds_split = partial(split_data, splitter=splitter)
 data_stream = data_stream.map(process_ds_split,
@@ -108,7 +109,8 @@ data_stream = data_stream.map(process_ds_split,
                               num_proc=2,
                               batched=True,
                               desc='Splitting...')
-print(data_stream['train'][0])
+print(len(data_stream['train']))
+print(data_stream['train'][:10])
 
 print(f'bos token: {tokenizer.bos_token} {tokenizer.bos_token_id}')
 process_ds = partial(process_data, tokenizer=tokenizer, bos=True)

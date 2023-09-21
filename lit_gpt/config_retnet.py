@@ -34,8 +34,7 @@ def arg_loader():
 
     parser.add_argument("--train_data_dir", type=str,
                         default="/apdcephfs/share_300000800/user/swcho/data/pretrain_retnet")
-    parser.add_argument("--val_data_dir", type=str,
-                        default="/apdcephfs/share_300000800/user/swcho/data/pretrain_retnet")
+    parser.add_argument("--val_data_dir", type=str)
     parser.add_argument("--prefix", type=str, default="PCS-merged-360G")
     parser.add_argument("--out_dir", type=str, default="out")
     parser.add_argument("--hf_dir", type=str)

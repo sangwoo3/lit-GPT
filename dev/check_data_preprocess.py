@@ -52,6 +52,7 @@ def split_data(data, splitter):
 
 def process_data(data, tokenizer, bos=False, eos=False):
     input_ids = []
+    print(type(data["sentences"]))
     for sentence in data["sentences"]:
         sentence_ids = tokenizer(sentence, truncation=False, add_special_tokens=False)["input_ids"]
         if len(sentence_ids) > 0:

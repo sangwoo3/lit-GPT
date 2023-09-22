@@ -1,14 +1,12 @@
-import os
+# import os
 import torch
 import torch.nn as nn
-from typing import Optional, Union, Tuple
-from dataclasses import dataclass
+# from typing import Optional, Union, Tuple
+# from dataclasses import dataclass
 
 from torchscale.architecture.config import RetNetConfig
 from torchscale.architecture.retnet import RetNetDecoder
 from transformers import AutoTokenizer
-
-from lit_gpt.utils import chunked_cross_entropy
 
 
 def Embedding(num_embeddings, embedding_dim, padding_idx=None):
@@ -33,7 +31,8 @@ class RetNet(nn.Module):
         self.tokenizer = AutoTokenizer.from_pretrained(self.tokenizer_dir)
 
         self.config = RetNetConfig()
-        self.config.override(vars(self.args))
+        # self.config.override(vars(self.args))
+        self.config.update(vars(self.args))
         self.config.vocab_size = len(self.tokenizer)
 
         self.build_model()
@@ -78,8 +77,8 @@ class RetNet(nn.Module):
             self.config.decoder_ffn_embed_dim = 16384
             self.config.decoder_layers = 64
             self.config.decoder_retention_heads = 32
-        print('in model config with args', self.config.__dict__)
-        self.config.block_size = self.args.block_size
+        # print('in model config with args', self.config.__dict__)
+        # self.config.block_size = self.args.block_size
         self.config.n_layer = self.config.decoder_layers
         self.config.n_embd = self.config.decoder_embed_dim
         # self.config.activation_fn = "swish"   # activation_fn for FF; default of activation for RetNet is swish
@@ -91,22 +90,12 @@ class RetNet(nn.Module):
 
         embed_tokens = Embedding(self.config.vocab_size, self.config.decoder_embed_dim)
         self.model = RetNetDecoder(self.config, embed_tokens=embed_tokens)
-        # print(self.model)
 
     def max_positions(self):
         return self.config.max_target_positions
 
     def forward(self,
                 input_ids: torch.LongTensor = None,
-                labels: Optional[torch.LongTensor] = None,
-                ): #-> Union[Tuple, CausalLMOutput]:
+                ):
         logits, aux_dic = self.model(input_ids)
         return logits
-        # loss = None
-        # if labels is not None:
-        #     loss = chunked_cross_entropy(logits, labels, chunk_size=self.config.recurrent_chunk_size)
-        #
-        # return CausalLMOutput(
-        #         loss=loss,
-        #         logits=logits,
-        # )

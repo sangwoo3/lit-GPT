@@ -109,7 +109,7 @@ echo ${ALL_ARGS}
 echo ${LAUNCH_ARGS}
 
 CMD="lightning run model ${LAUNCH_ARGS} \
-${OUTPUT_CODE_DIR}}/pretrain/retnet_trainer_fabric.py ${ALL_ARGS}"
+${OUTPUT_CODE_DIR}/pretrain/retnet_trainer_fabric.py ${ALL_ARGS}"
 echo $CMD
 
 rm ${OUTPUT_EXP_DIR}/log_node_${INDEX}.txt

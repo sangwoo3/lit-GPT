@@ -83,7 +83,7 @@ TRAIN_ARGS="--exp_name ${EXP_NAME} \
 --save_interval 4000 \
 --eval_interval 8000 \
 --log_interval 1 \
---eval_iters 1 \
+--eval_iters 20 \
 --micro_batch_size 4 \
 --batch_size 32 \
 --learning_rate 3e-4 \

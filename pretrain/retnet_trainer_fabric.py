@@ -79,13 +79,7 @@ def main(fabric, args):
         args.log_dir.mkdir(parents=True, exist_ok=True)
         args.ckpt_dir.mkdir(parents=True, exist_ok=True)
 
-    fabric.logger.experiment.add_text(
-            "hyperparameters",
-            "|param|value|\n|-|-|\n%s" % ("\n".join([f"|{key}|{value}|" for key, value in vars(args).items()])),
-    )
-
     speed_monitor = SpeedMonitor(fabric, window_size=50, time_unit="seconds")
-    # config = Config.from_name(model_name)
 
     train_dataloader, val_dataloader = create_dataloaders(
             batch_size=args.micro_batch_size,
@@ -100,24 +94,28 @@ def main(fabric, args):
         train_dataloader = fabric.setup_dataloaders(train_dataloader)
     else:
         train_dataloader, val_dataloader = fabric.setup_dataloaders(train_dataloader, val_dataloader)
-    #     fabric.print(f"val_dataloader len: {len(val_dataloader)}")
-    # fabric.print(f"train_dataloader len: {len(train_dataloader)}")
+        fabric.print(f"val_dataloader len: {len(val_dataloader)}")
+    fabric.print(f"train_dataloader len: {len(train_dataloader)}")
 
     fabric.seed_everything(args.seed)  # same seed for every process to init model (FSDP)
 
     # fabric.print(f"Loading model with {config.__dict__}")
-    fabric.print(f"Training args {args}")
+    # fabric.print(f"Training args {args}")
     t0 = time.perf_counter()
     with fabric.init_module(empty_init=True):
         model = RetNet(args)
         model.apply(model._init_weights)
-        fabric.print(f"Model configuration {model.config.__dict__}")
+        config = model.config.__dict__
+        fabric.print(f"Model configuration {config}")
         fabric.print(model.model)
-
     _time = time.perf_counter() - t0
-
-    fabric.print(f"Time to instantiate model: {time.perf_counter() - t0:.02f} seconds.")
+    fabric.print(f"Time to instantiate model: {_time:.02f} seconds.")
     fabric.print(f"Total parameters {num_parameters(model):,}")
+
+    fabric.logger.experiment.add_text(
+            "hyperparameters",
+            "|param|value|\n|-|-|\n%s" % ("\n".join([f"|{key}|{value}|" for key, value in config.items()])),
+    )
 
     model = fabric.setup(model)
     optimizer = torch.optim.AdamW(
@@ -193,11 +191,11 @@ def train(fabric, state, train_dataloader, val_dataloader, speed_monitor, args):
             optimizer.zero_grad()
             state["step_count"] += 1
 
-        t1 = time.perf_counter()
+        t1 = time.perf_counter() - total_t0
         total_lengths += input_ids.size(1)
         speed_monitor.on_train_batch_end(
                 (state["iter_num"] + 1) * args.micro_batch_size,
-                t1 - total_t0,
+                t1,
                 # this assumes that device FLOPs are the same and that all devices have the same batch size
                 fabric.world_size,
                 flops_per_batch=measured_flops,
@@ -206,12 +204,12 @@ def train(fabric, state, train_dataloader, val_dataloader, speed_monitor, args):
         if state["iter_num"] % args.log_interval == 0:
             fabric.print(
                     f"[iter {state['iter_num']} step {state['step_count']}]: loss {loss.item():.4f}, "
-                    f"lr {lr:.10E}, iter time: {(t1 - iter_t0) * 1000:.2f}ms "
+                    f"lr {lr:.10E}, iter time: {t1 * 1000:.2f}ms "
                     f"{'(optimizer.step)' if not is_accumulating else ''}"
             )
             fabric.log("train/loss", loss.item(), state['iter_num'])
             fabric.log("train/ppl", ppl(loss).item(), state['iter_num'])
-            fabric.log("train/iter_time", (t1 - iter_t0) * 1000, state['iter_num'])
+            fabric.log("train/iter_time", t1 * 1000, state['iter_num'])
 
         if val_dataloader is not None and not is_accumulating and state["step_count"] % args.eval_interval == 0:
             t0 = time.perf_counter()
@@ -237,6 +235,8 @@ def validate(fabric: L.Fabric, model: torch.nn.Module, val_dataloader: DataLoade
 
     losses = torch.zeros(args.eval_iters, device=fabric.device)
     for k, val_data in enumerate(val_dataloader):
+        if k >= args.eval_iters:
+            break
         input_ids = val_data[:, 0: model.config.block_size].contiguous()
         targets = val_data[:, 1: model.config.block_size + 1].contiguous()
         logits = model(input_ids)
@@ -262,7 +262,7 @@ def create_dataloader(
         shuffle: bool = True, seed: int = 12345,
 ) -> DataLoader:
     filenames = glob.glob(str(data_dir / f"{prefix}*"))
-    fabric.print(f"found {len(filenames)} files in {data_dir} with {prefix}")
+    fabric.print(f"found {len(filenames)} files in {data_dir} for prefix [{prefix}]")
     dataset = PackedDataset(
             filenames,
             n_chunks=1,

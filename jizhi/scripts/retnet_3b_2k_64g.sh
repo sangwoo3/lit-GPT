@@ -7,12 +7,21 @@ PROJ_DIR=/apdcephfs/share_300000800/user/swcho
 
 CODE_DIR=${PROJ_DIR}/code/lit-GPT
 DATA_PATH=${PROJ_DIR}/data
-OUTPUT_DIR=${PROJ_DIR}/output
 HF_DIR=${PROJ_DIR}/huggingface_models
+OUTPUT_DIR=${PROJ_DIR}/output
 
-EXP_NAME="retnet_3b_train"
+EXP_NAME="retnet_3b_2k_64GPU"
 
-mkdir -p ${OUTPUT_DIR}/${EXP_NAME}
+OUTPUT_EXP_DIR=${OUTPUT_DIR}/${EXP_NAME}
+OUTPUT_CODE_DIR=${OUTPUT_EXP_DIR}/code
+
+if [[ "${INDEX}" == "0" ]]; then
+  mkdir -p $OUTPUT_EXP_DIR
+  rm -rf $OUTPUT_CODE_DIR
+  cp -r $CODE_DIR $OUTPUT_CODE_DIR
+else
+  sleep 30
+fi
 
 #########################
 #  Debug args
@@ -72,7 +81,7 @@ LAUNCH_ARGS="
 #              --strategy fsdp \
 #              --precision bf16-mixed \
 
-DATA_ARGS="--out_dir ${OUTPUT_DIR} \
+DATA_ARGS="--out_dir ${OUTPUT_EXP_DIR} \
 --hf_dir ${HF_DIR}"
 
 TRAIN_ARGS="--exp_name ${EXP_NAME} \
@@ -100,10 +109,11 @@ echo ${ALL_ARGS}
 echo ${LAUNCH_ARGS}
 
 CMD="lightning run model ${LAUNCH_ARGS} \
-${CODE_DIR}/pretrain/retnet_trainer_fabric.py ${ALL_ARGS}"
+${OUTPUT_CODE_DIR}}/pretrain/retnet_trainer_fabric.py ${ALL_ARGS}"
 echo $CMD
 
-eval ${CMD} 2>&1 | tee -a ${OUTPUT_DIR}/${EXP_NAME}/log_node_${INDEX}.txt
+rm ${OUTPUT_EXP_DIR}/log_node_${INDEX}.txt
+eval ${CMD} 2>&1 | tee -a ${OUTPUT_EXP_DIR}/log_node_${INDEX}.txt
 
 # mirrors.tencent.com/seattle-nlu/litgpt:v6.1
 # mirrors.tencent.com/ai-lab-seattle/retnet:v911

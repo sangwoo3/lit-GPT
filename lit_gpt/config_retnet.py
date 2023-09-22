@@ -30,7 +30,7 @@ def arg_loader():
     parser.add_argument("--gradient_clip_val", type=float, default=1.0)  # avoid fp16 nan
     # parser.add_argument("--devices", type=int, default=1)
     # parser.add_argument("--num_nodes", type=int, default=1)
-    parser.add_argument("--num_workers", type=int, default=2)
+    parser.add_argument("--num_workers", type=int, default=1)
 
     parser.add_argument("--train_data_dir", type=str,
                         default="/apdcephfs/share_300000800/user/swcho/data/pretrain_retnet")

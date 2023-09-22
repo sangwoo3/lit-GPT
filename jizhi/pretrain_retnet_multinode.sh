@@ -79,8 +79,8 @@ TRAIN_ARGS="--exp_name ${EXP_NAME} \
 --model_name retnet_3b \
 --max_iters 200000 \
 --warmup_iters 3000 \
---save_interval 4000 \
---eval_interval 8000 \
+--save_interval 500 \
+--eval_interval 1000 \
 --log_interval 1 \
 --eval_iters 20 \
 --micro_batch_size 4 \

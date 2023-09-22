@@ -7,7 +7,7 @@ def arg_loader():
     parser.add_argument("--model_name", type=str, choices=['retnet_medium', 'retnet_xl', 'retnet_3b',
                                                            'retnet_7b', 'retnet_13b', 'retnet_65b'],
                         default='retnet_3b')
-    parser.add_argument("--exp_name", type=str, default='pile-c4-stack')
+    parser.add_argument("--exp_name", type=str)
     parser.add_argument("--save_interval", type=int, default=2500, help='based on steps (effective BS)')
     parser.add_argument("--eval_interval", type=int, default=1250, help='based on steps (effective BS)')
     parser.add_argument("--log_interval", type=int, default=160, help='based on interations')

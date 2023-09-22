@@ -32,7 +32,7 @@ class RetNet(nn.Module):
 
         self.config = RetNetConfig()
         # self.config.override(vars(self.args))
-        self.config.update(vars(self.args))
+        self.config.__dict__.update(vars(self.args))
         self.config.vocab_size = len(self.tokenizer)
 
         self.build_model()

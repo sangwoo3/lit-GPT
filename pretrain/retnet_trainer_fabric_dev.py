@@ -240,7 +240,7 @@ def train(fabric, state, train_dataloader, val_dataloader, speed_monitor, args):
             val_loss, val_ppl = validate(fabric, model, val_dataloader, args)
             t1 = time.perf_counter() - t0
             speed_monitor.eval_end(t1)
-            fabric.print(f"step {state['iter_num']}: val loss {val_loss:.4f}, val ppl {ppl:.4f}, val time:"
+            fabric.print(f"step {state['iter_num']}: val loss {val_loss:.4f}, val ppl {val_ppl:.4f}, val time:"
                          f" {t1 * 1000:.2f}ms")
             fabric.log("val/loss", val_loss.item(), state['iter_num'])
             fabric.log("val/ppl", val_ppl.item(), state['iter_num'])

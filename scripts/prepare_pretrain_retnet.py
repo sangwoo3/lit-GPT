@@ -1,6 +1,7 @@
 # import glob
 # import json
 # import os
+import os.path
 import sys
 import time
 from pathlib import Path
@@ -10,7 +11,7 @@ from tqdm import tqdm
 
 from functools import partial
 from transformers import AutoTokenizer
-from datasets import load_dataset
+from datasets import load_dataset, load_from_disk
 import multiprocessing
 import nltk
 
@@ -158,70 +159,74 @@ def process(source_path: Path,
             prefix: str,
             num_proc: int):
     source_file = str(source_path / "merged_360G_v2.jsonl")
-    merged_dataset = load_dataset(
-            "json", data_files=source_file, split='train',
-            # streaming=True,
-    )
-    # print(next(iter(merged_dataset_streamed)))
-    print(merged_dataset[0])
+    dest_tokenized_path = destination_path / 'hf_tokenized'
+    if not os.path.exists(dest_tokenized_path):
+        merged_dataset = load_dataset(
+                "json", data_files=source_file, split='train',
+                # streaming=True,
+        )
+        # print(next(iter(merged_dataset_streamed)))
+        print(merged_dataset[0])
 
-    # validation set: 0.01%
-    merged_dataset = merged_dataset.train_test_split(test_size=0.0001, shuffle=True)
-    merged_dataset['valid'] = merged_dataset.pop('test')
+        # validation set: 0.01%
+        merged_dataset = merged_dataset.train_test_split(test_size=0.0001, shuffle=True)
+        merged_dataset['valid'] = merged_dataset.pop('test')
 
-    '''
-    # sentencepiece tokenize
-    destination_path.mkdir()
+        '''
+        # sentencepiece tokenize
+        destination_path.mkdir()
+        
+        chunk_size_train = n_tk_train_est // n_train_files // (block_size + 1) * (block_size + 1)
+        chunk_size_valid = n_tk_valid_est // n_valid_files // (block_size + 1) * (block_size + 1)
+        print(f"chunk size: train-{chunk_size_train}, valid-{chunk_size_valid}")
     
-    chunk_size_train = n_tk_train_est // n_train_files // (block_size + 1) * (block_size + 1)
-    chunk_size_valid = n_tk_valid_est // n_valid_files // (block_size + 1) * (block_size + 1)
-    print(f"chunk size: train-{chunk_size_train}, valid-{chunk_size_valid}")
+        build_packed_data_sp(destination_path, prefix + '-train',
+                             chunk_size_train, merged_dataset['train'])
+        build_packed_data_sp(destination_path, prefix + '-valid',
+                             chunk_size_train, merged_dataset['valid'])
+        '''
 
-    build_packed_data_sp(destination_path, prefix + '-train',
-                         chunk_size_train, merged_dataset['train'])
-    build_packed_data_sp(destination_path, prefix + '-valid',
-                         chunk_size_train, merged_dataset['valid'])
-    '''
+        # HF tokenize
+        t0 = time.time()
+        process_dataset = partial(split_and_tokenize_data, tokenizer=tokenizer, bos=True)
+        merged_dataset = merged_dataset.map(process_dataset,
+                                            remove_columns=merged_dataset['train'].column_names,
+                                            num_proc=num_proc,
+                                            # batched=True,
+                                            desc='Splitting_Tokenizing...')
+        t1 = time.time()
+        print(f"[finished split-N-tokenize] elapsed: {t1 - t0}sec")
 
-    # HF tokenize
-    t0 = time.time()
-    process_dataset = partial(split_and_tokenize_data, tokenizer=tokenizer, bos=True)
-    merged_dataset = merged_dataset.map(process_dataset,
-                                        remove_columns=merged_dataset['train'].column_names,
-                                        num_proc=num_proc,
-                                        # batched=True,
-                                        desc='Splitting_Tokenizing...')
-    t1 = time.time()
-    print(f"[finished split-N-tokenize] elapsed: {t1 - t0}sec")
+        '''
+        t0 = time.time()
+        merged_dataset = merged_dataset.map(split_data,
+                                            remove_columns=merged_dataset['train'].column_names,  # ["text"],
+                                            num_proc=num_proc,
+                                            # batched=True,
+                                            desc='Splitting...')
+        t1 = time.time()
+        print(f"[finished splitting] elapsed: {t1 - t0}sec")    # 2.41 hrs
+    
+        t0 = time.time()
+        process_dataset = partial(tokenize_data, tokenizer=tokenizer, bos=True)
+        merged_dataset = merged_dataset.map(process_dataset,
+                                            remove_columns=["sentences"],
+                                            num_proc=num_proc,
+                                            # batched=True,
+                                            desc='Tokenizing...')
+        t1 = time.time()
+        # print(next(iter(merged_dataset)))
+        print(f"[finished tokenize] elapsed: {t1 - t0}sec")    # 1.11 hrs
+        '''
 
-    '''
-    t0 = time.time()
-    merged_dataset = merged_dataset.map(split_data,
-                                        remove_columns=merged_dataset['train'].column_names,  # ["text"],
-                                        num_proc=num_proc,
-                                        # batched=True,
-                                        desc='Splitting...')
-    t1 = time.time()
-    print(f"[finished splitting] elapsed: {t1 - t0}sec")    # 2.41 hrs
+        dest_tokenized_path.mkdir(parents=True, exist_ok=True)
+        merged_dataset.save_to_disk(dest_tokenized_path)
+        print(f"huggingface dataset is saved: {str(dest_tokenized_path)}")  # in case of error on packed data
 
-    t0 = time.time()
-    process_dataset = partial(tokenize_data, tokenizer=tokenizer, bos=True)
-    merged_dataset = merged_dataset.map(process_dataset,
-                                        remove_columns=["sentences"],
-                                        num_proc=num_proc,
-                                        # batched=True,
-                                        desc='Tokenizing...')
-    t1 = time.time()
-    # print(next(iter(merged_dataset)))
-    print(f"[finished tokenize] elapsed: {t1 - t0}sec")    # 1.11 hrs
-    '''
-
+    else:
+        merged_dataset = load_from_disk(dest_tokenized_path)
+        print(f'loaded from {dest_tokenized_path}')
     print(merged_dataset['train'][100])
-
-    dest_tokenized_path = destination_path / 'tokenized'
-    dest_tokenized_path.mkdir(parents=True, exist_ok=True)
-    merged_dataset.save_to_disk(dest_tokenized_path)
-    print(f"huggingface dataset is saved: {str(dest_tokenized_path)}")  # in case of error on packed data
 
     n_tk_train = np.sum(merged_dataset["train"]["len_ids"], dtype=np.uint64)
     n_tk_valid = np.sum(merged_dataset["valid"]["len_ids"], dtype=np.uint64)
@@ -249,8 +254,8 @@ def process(source_path: Path,
     # shuffled_ds_train = shuffled_tk_dataset.skip(n_val)
     # shuffled_ds_valid = shuffled_tk_dataset.take(n_val)
 
-    chunk_size_train = n_tk_train // n_train_files // (block_size + 1) * (block_size + 1)
-    chunk_size_valid = n_tk_valid // n_valid_files // (block_size + 1) * (block_size + 1)
+    chunk_size_train = int(n_tk_train // n_train_files // (block_size + 1) * (block_size + 1))
+    chunk_size_valid = int(n_tk_valid // n_valid_files // (block_size + 1) * (block_size + 1))
     print(f"chunk size: train-{chunk_size_train}, valid-{chunk_size_valid}")
 
     destination_path.mkdir(parents=True, exist_ok=True)

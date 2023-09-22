@@ -8,15 +8,15 @@ def arg_loader():
                                                            'retnet_7b', 'retnet_13b', 'retnet_65b'],
                         default='retnet_3b')
     parser.add_argument("--exp_name", type=str, default='pile-c4-stack')
-    parser.add_argument("--save_interval", type=int, default=2500)
-    parser.add_argument("--eval_interval", type=int, default=1250)
-    parser.add_argument("--log_interval", type=int, default=160)
+    parser.add_argument("--save_interval", type=int, default=2500, help='based on steps (effective BS)')
+    parser.add_argument("--eval_interval", type=int, default=1250, help='based on steps (effective BS)')
+    parser.add_argument("--log_interval", type=int, default=160, help='based on interations')
     parser.add_argument("--eval_iters", type=int, default=1, help="validation iteration")
 
     # Hyper-parameters
     parser.add_argument("--learning_rate", type=float, default=3e-4)
-    parser.add_argument("--batch_size", type=int, default=64)
-    parser.add_argument("--micro_batch_size", type=int, default=4)
+    parser.add_argument("--batch_size", type=int, default=64, help='effective BS with grad accum')
+    parser.add_argument("--micro_batch_size", type=int, default=4, help='batch per each GPU')
     parser.add_argument("--max_iters", type=int, default=400000,
                         help="num_epochs * (epoch_size // micro_batch_size) // devices")
     parser.add_argument("--warmup_iters", type=int, default=600, help="1.5% of 400K iterations")

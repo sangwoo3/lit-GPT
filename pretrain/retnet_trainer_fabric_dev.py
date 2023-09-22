@@ -120,7 +120,7 @@ def main(fabric, args):
         model = RetNet(args)
         # model = torch.compile(model)
         model.apply(model._init_weights)
-        config = model.config.__dict__
+        config = dict(sorted(model.config.__dict__.items()))
         fabric.print(f"Model configuration {config}")
         fabric.print(model.model)
     _time = time.perf_counter() - t0

@@ -77,7 +77,7 @@ def setup():
                       accelerator='gpu',
                       # num_nodes=args.num_nodes,
                       )
-    fabric.print(f"Training args in setup {args}")
+    # fabric.print(f"Training args in setup {args}")
 
     # if args.num_nodes > 1:
     main(fabric, args)
@@ -92,11 +92,6 @@ def main(fabric, args):
         args.ckpt_dir = args.out_dir / "ckpt"
         args.log_dir.mkdir(parents=True, exist_ok=True)
         args.ckpt_dir.mkdir(parents=True, exist_ok=True)
-
-    fabric.logger.experiment.add_text(
-            "hyperparameters",
-            "|param|value|\n|-|-|\n%s" % ("\n".join([f"|{key}|{value}|" for key, value in vars(args).items()])),
-    )
 
     speed_monitor = SpeedMonitor(fabric, window_size=50, time_unit="seconds")
     # config = Config.from_name(model_name)
@@ -113,8 +108,8 @@ def main(fabric, args):
         train_dataloader = fabric.setup_dataloaders(train_dataloader)
     else:
         train_dataloader, val_dataloader = fabric.setup_dataloaders(train_dataloader, val_dataloader)
-    #     fabric.print(f"val_dataloader len: {len(val_dataloader)}")
-    # fabric.print(f"train_dataloader len: {len(train_dataloader)}")
+        fabric.print(f"val_dataloader len: {len(val_dataloader)}")
+    fabric.print(f"train_dataloader len: {len(train_dataloader)}")
 
     fabric.seed_everything(args.seed)  # same seed for every process to init model (FSDP)
 
@@ -125,13 +120,17 @@ def main(fabric, args):
         model = RetNet(args)
         # model = torch.compile(model)
         model.apply(model._init_weights)
-        fabric.print(f"Model configuration {model.config.__dict__}")
+        config = model.config.__dict__
+        fabric.print(f"Model configuration {config}")
         fabric.print(model.model)
-
     _time = time.perf_counter() - t0
-
-    fabric.print(f"Time to instantiate model: {time.perf_counter() - t0:.02f} seconds.")
+    fabric.print(f"Time to instantiate model: {_time:.02f} seconds.")
     fabric.print(f"Total parameters {num_parameters(model):,}")
+
+    fabric.logger.experiment.add_text(
+            "hyperparameters",
+            "|param|value|\n|-|-|\n%s" % ("\n".join([f"|{key}|{value}|" for key, value in config.items()])),
+    )
 
     model = fabric.setup(model)
     optimizer = torch.optim.AdamW(
@@ -251,6 +250,8 @@ def validate(fabric: L.Fabric, model: torch.nn.Module, val_dataloader: DataLoade
 
     losses = torch.zeros(args.eval_iters, device=fabric.device)
     for k, val_data in enumerate(val_dataloader):
+        if k >= args.eval_iters:
+            break
         input_ids = val_data[:, 0: model.config.block_size].contiguous()
         targets = val_data[:, 1: model.config.block_size + 1].contiguous()
         logits = model(input_ids)
@@ -277,7 +278,7 @@ def create_dataloader(
     datasets = []
     for prefix, _ in data_config:
         filenames = glob.glob(str(data_dir / f"{prefix}*"))
-        fabric.print(f"{filenames}, {data_dir}, {data_config}, {prefix}")
+        # fabric.print(f"{filenames}, {data_dir}, {data_config}, {prefix}")
         dataset = PackedDataset(
                 filenames,
                 n_chunks=1,

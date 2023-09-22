@@ -10,7 +10,7 @@ DATA_PATH=${PROJ_DIR}/data
 OUTPUT_DIR=${PROJ_DIR}/output
 HF_DIR=${PROJ_DIR}/huggingface_models
 
-EXP_NAME="retnet_3b"
+EXP_NAME="retnet_3b_train"
 
 mkdir -p ${OUTPUT_DIR}/${EXP_NAME}
 
@@ -68,7 +68,6 @@ LAUNCH_ARGS="
              --main_address $MASTER_ADDR \
              --main_port $MASTER_PORT \
              "
-
 #             --accelerator cuda \
 #              --strategy fsdp \
 #              --precision bf16-mixed \
@@ -79,12 +78,19 @@ DATA_ARGS="--train_data_dir ${DATA_PATH}/lit-redpajama-sample \
 
 TRAIN_ARGS="--exp_name ${EXP_NAME} \
 --model_name retnet_3b \
---save_interval 100 \
---eval_interval 100 \
+--max_iters 200000 \
+--warmup_iters 3000 \
+--save_interval 4000 \
+--eval_interval 8000 \
+--log_interval 1 \
 --eval_iters 1 \
---log_interval 2 \
 --micro_batch_size 4 \
---batch_size 8"
+--batch_size 32 \
+--learning_rate 3e-4 \
+--train_data_dir /apdcephfs/share_300000800/user/swcho/data/pretrain_retnet \
+--val_data_dir /apdcephfs/share_300000800/user/swcho/data/pretrain_retnet \
+--prefix PCS-merged-360G \
+"
 #--devices ${GPUS_PER_NODE} \
 #--num_nodes ${HOST_NUM}"
 

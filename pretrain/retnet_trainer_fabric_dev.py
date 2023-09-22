@@ -329,7 +329,7 @@ def create_dataloaders(
             block_size=effective_block_size,
             fabric=fabric,
             data_dir=train_data_dir,
-            n_chunks=3,     # when 8 GPUs
+            n_chunks=3,     # when 4 GPUs
             shuffle=True,
             seed=seed,
             data_config=data_config_train,
@@ -340,7 +340,7 @@ def create_dataloaders(
                 block_size=effective_block_size,
                 fabric=fabric,
                 data_dir=val_data_dir,
-                n_chunks=1,     # when 8 GPUs
+                n_chunks=2,     # when 4 GPUs
                 shuffle=False,
                 seed=seed,
                 data_config=data_config_val,

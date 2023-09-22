@@ -101,7 +101,7 @@ echo ${ALL_ARGS}
 echo ${LAUNCH_ARGS}
 
 CMD="lightning run model ${LAUNCH_ARGS} \
-${CODE_DIR}/pretrain/retnet_trainer_fabric_dev.py ${ALL_ARGS}"
+${CODE_DIR}/pretrain/retnet_trainer_fabric.py ${ALL_ARGS}"
 echo $CMD
 
 eval ${CMD} 2>&1 | tee -a ${OUTPUT_DIR}/${EXP_NAME}/log_node_${INDEX}.txt

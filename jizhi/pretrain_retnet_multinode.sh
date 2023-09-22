@@ -72,8 +72,7 @@ LAUNCH_ARGS="
 #              --strategy fsdp \
 #              --precision bf16-mixed \
 
-DATA_ARGS="--train_data_dir ${DATA_PATH}/lit-redpajama-sample \
---out_dir ${OUTPUT_DIR} \
+DATA_ARGS="--out_dir ${OUTPUT_DIR} \
 --hf_dir ${HF_DIR}"
 
 TRAIN_ARGS="--exp_name ${EXP_NAME} \

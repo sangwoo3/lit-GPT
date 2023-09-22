@@ -40,6 +40,8 @@ def arg_loader():
     parser.add_argument("--hf_dir", type=str)
 
     parser.add_argument("--block_size", type=int, default=2048)
+    parser.add_argument("--num_train_file", type=int, default=512, help="number of .bin train files")
+    parser.add_argument("--num_valid_file", type=int, default=64, help="number of .bin valid files")
 
     parser.add_argument("--resume", action="store_true")
 

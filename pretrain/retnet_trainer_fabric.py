@@ -88,14 +88,15 @@ def main(fabric, args):
             train_data_dir=Path(args.train_data_dir),
             val_data_dir=Path(args.val_data_dir) if args.val_data_dir else None,
             prefix=args.prefix,
+            n_files=(args.num_train_file, args.num_valid_file),
             seed=(args.seed + fabric.global_rank),
     )
     if val_dataloader is None:
         train_dataloader = fabric.setup_dataloaders(train_dataloader)
     else:
         train_dataloader, val_dataloader = fabric.setup_dataloaders(train_dataloader, val_dataloader)
-        fabric.print(f"val_dataloader len: {len(val_dataloader)}")
-    fabric.print(f"train_dataloader len: {len(train_dataloader)}")
+    #     fabric.print(f"val_dataloader len: {len(val_dataloader)}")
+    # fabric.print(f"train_dataloader len: {len(train_dataloader)}")
 
     fabric.seed_everything(args.seed)  # same seed for every process to init model (FSDP)
 
@@ -259,13 +260,13 @@ def ppl(loss):
 
 def create_dataloader(
         batch_size: int, block_size: int, data_dir: Path, fabric, prefix: str,
-        shuffle: bool = True, seed: int = 12345,
+        n_chunks: int = 1, shuffle: bool = True, seed: int = 12345,
 ) -> DataLoader:
     filenames = glob.glob(str(data_dir / f"{prefix}*"))
     fabric.print(f"found {len(filenames)} files in {data_dir} for prefix [{prefix}]")
     dataset = PackedDataset(
             filenames,
-            n_chunks=1,
+            n_chunks=n_chunks,
             block_size=block_size,
             shuffle=shuffle,
             seed=seed,
@@ -286,10 +287,15 @@ def create_dataloaders(
         block_size: int,
         fabric,
         prefix: str,
+        n_files,
         train_data_dir: Path = Path("data"),
         val_data_dir: Optional[Path] = None,
         seed: int = 12345,
 ) -> Tuple[DataLoader, DataLoader]:
+    n_train_files, n_valid_files = n_files
+    n_train_chunks = n_train_files // fabric.world_size
+    n_valid_chunks = n_valid_files // fabric.world_size
+
     # Increase by one because we need the next word as well
     effective_block_size = block_size + 1
     train_dataloader = create_dataloader(
@@ -298,6 +304,7 @@ def create_dataloaders(
             fabric=fabric,
             data_dir=train_data_dir,
             prefix=f"{prefix}-train",
+            n_chunks=n_train_chunks,
             shuffle=True,
             seed=seed,
     )
@@ -308,6 +315,7 @@ def create_dataloaders(
                 fabric=fabric,
                 data_dir=val_data_dir,
                 prefix=f"{prefix}-val",
+                n_chunks=n_valid_chunks,
                 shuffle=False,
                 seed=seed,
         )

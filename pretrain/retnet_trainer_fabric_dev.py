@@ -27,7 +27,7 @@ from lit_gpt.speed_monitor import estimate_flops, measure_flops
 from lit_gpt.utils import chunked_cross_entropy, get_default_supported_precision, num_parameters, step_csv_logger
 from lightning.fabric.loggers import TensorBoardLogger
 
-data_config = [
+data_config_train = [
     # ("arxiv", 2.5),
     ("book", 4.5),
     # ("c4", 15.0),
@@ -35,6 +35,15 @@ data_config = [
     # ("github", 4.5),
     # ("stackexchange", 2.0),
     ("wikipedia", 4.5),
+]
+data_config_val = [
+    # ("arxiv", 2.5),
+    # ("book", 4.5),
+    # ("c4", 15.0),
+    # ("cc", 67.0),
+    # ("github", 4.5),
+    ("stackexchange", 2.0),
+    # ("wikipedia", 4.5),
 ]
 
 
@@ -108,8 +117,8 @@ def main(fabric, args):
         train_dataloader = fabric.setup_dataloaders(train_dataloader)
     else:
         train_dataloader, val_dataloader = fabric.setup_dataloaders(train_dataloader, val_dataloader)
-        fabric.print(f"val_dataloader len: {len(val_dataloader)}")
-    fabric.print(f"train_dataloader len: {len(train_dataloader)}")
+    #     fabric.print(f"val_dataloader len: {len(val_dataloader)}")
+    # fabric.print(f"train_dataloader len: {len(train_dataloader)}")
 
     fabric.seed_everything(args.seed)  # same seed for every process to init model (FSDP)
 
@@ -273,7 +282,8 @@ def ppl(loss):
 
 
 def create_dataloader(
-        batch_size: int, block_size: int, data_dir: Path, fabric, shuffle: bool = True, seed: int = 12345
+        batch_size: int, block_size: int, data_dir: Path, fabric, data_config: list,
+        n_chunks: int = 1, shuffle: bool = True, seed: int = 12345
 ) -> DataLoader:
     datasets = []
     for prefix, _ in data_config:
@@ -281,7 +291,7 @@ def create_dataloader(
         # fabric.print(f"{filenames}, {data_dir}, {data_config}, {prefix}")
         dataset = PackedDataset(
                 filenames,
-                n_chunks=1,
+                n_chunks=n_chunks,
                 block_size=block_size,
                 shuffle=shuffle,
                 seed=seed,
@@ -319,8 +329,10 @@ def create_dataloaders(
             block_size=effective_block_size,
             fabric=fabric,
             data_dir=train_data_dir,
+            n_chunks=3,     # when 8 GPUs
             shuffle=True,
             seed=seed,
+            data_config=data_config_train,
     )
     val_dataloader = (
         create_dataloader(
@@ -328,8 +340,10 @@ def create_dataloaders(
                 block_size=effective_block_size,
                 fabric=fabric,
                 data_dir=val_data_dir,
+                n_chunks=1,     # when 8 GPUs
                 shuffle=False,
                 seed=seed,
+                data_config=data_config_val,
         )
         if val_data_dir
         else None

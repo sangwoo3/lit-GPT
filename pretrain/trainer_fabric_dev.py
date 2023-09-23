@@ -19,8 +19,6 @@ sys.path.append(str(wd))
 # from lit_gpt.model import GPT, Block, Config
 
 from lit_gpt.config_retnet import arg_loader
-from lit_gpt.retnet import RetNet
-from torchscale.architecture.retnet import DecoderLayer
 from lit_gpt.packed_dataset import CombinedDataset, PackedDataset
 from lit_gpt.speed_monitor import SpeedMonitorFabric as SpeedMonitor
 from lit_gpt.speed_monitor import estimate_flops, measure_flops
@@ -58,6 +56,13 @@ def setup():
     args.lr_decay_iters = args.max_iters
 
     args.out_dir = Path(args.out_dir) / args.exp_name
+
+    if args.model_type == 'retnet':
+        from torchscale.architecture.retnet import DecoderLayer
+        from lit_gpt.retnet import RetNet
+    elif args.model_type == 'transformer':
+        from torchscale.architecture.retnet import DecoderLayer
+        from lit_gpt.transformer import Transformer
 
     # if args.devices > 1:
     strategy = FSDPStrategy(
@@ -126,7 +131,10 @@ def main(fabric, args):
     fabric.print(f"Training args {args}")
     t0 = time.perf_counter()
     with fabric.init_module(empty_init=True):
-        model = RetNet(args)
+        if args.model_type == 'retnet':
+            model = RetNet(args)
+        elif args.model_type == 'transformer':
+            model = Transformer(args)
         # model = torch.compile(model)
         model.apply(model._init_weights)
         config = dict(sorted(model.config.__dict__.items()))

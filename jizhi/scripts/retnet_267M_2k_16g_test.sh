@@ -98,7 +98,7 @@ TRAIN_ARGS="--exp_name ${EXP_NAME} \
 --train_data_dir /apdcephfs_us/share_300814644/user/swcho/data/pretrain_retnet \
 --val_data_dir /apdcephfs_us/share_300814644/user/swcho/data/pretrain_retnet \
 --prefix PCS-merged-360G \
---precision 32
+--precision 32-true
 "
 #--devices ${GPUS_PER_NODE} \
 #--num_nodes ${HOST_NUM}"

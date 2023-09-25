@@ -3,7 +3,7 @@
 #########################
 #  Project Related args
 #########################
-PROJ_DIR=/apdcephfs/share_300000800/user/swcho
+PROJ_DIR=/apdcephfs_us/share_300814644/user/swcho
 
 CODE_DIR=${PROJ_DIR}/code/lit-GPT
 DATA_PATH=${PROJ_DIR}/data
@@ -31,7 +31,7 @@ export PYTORCH_JIT=0
 #  NCCL and CUDA args
 #########################
 export CUDA_DEVICE_MAX_CONNECTIONS=1
-NET_TYPE="high"
+NET_TYPE="low"
 if [[ "${NET_TYPE}" = "low" ]]; then
     export NCCL_SOCKET_IFNAME=eth1
     export NCCL_IB_GID_INDEX=3

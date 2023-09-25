@@ -71,6 +71,8 @@ def setup():
                       loggers=logger,
                       accelerator='gpu',
                       )
+
+    fabric.print(f"precision: {precision}")
     main(fabric, args)
     # fabric.launch(main, args)
 

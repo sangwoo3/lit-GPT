@@ -24,6 +24,8 @@ from lit_gpt.speed_monitor import SpeedMonitorFabric as SpeedMonitor
 from lit_gpt.speed_monitor import estimate_flops, measure_flops
 from lit_gpt.utils import chunked_cross_entropy, get_default_supported_precision, num_parameters, step_csv_logger
 from lightning.fabric.loggers import TensorBoardLogger
+from lit_gpt.retnet import RetNet
+from lit_gpt.transformer import Transformer
 
 data_config_train = [
     # ("arxiv", 2.5),
@@ -59,10 +61,8 @@ def setup():
 
     if args.model_type == 'retnet':
         from torchscale.architecture.retnet import DecoderLayer
-        from lit_gpt.retnet import RetNet
     elif args.model_type == 'transformer':
         from torchscale.architecture.retnet import DecoderLayer
-        from lit_gpt.transformer import Transformer
 
     # if args.devices > 1:
     strategy = FSDPStrategy(

@@ -3,7 +3,7 @@
     "business_flag":"AILab_Tukwila",
     "mount_ceph_business_flag":"HunyuanAide",
     "task_flag":"train_RetNet_267M_2K_16G",
-    "model_local_file_path":"/apdcephfs_us/share_300814644/user/swcho/code/lit-GPT",
+    "model_local_file_path":"/apdcephfs_cq3/share_1603164/user/swcho/code/lit-GPT",
     "host_num":2,
     "host_gpu_num":8,
     "GPUName":"A100",

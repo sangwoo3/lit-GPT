@@ -8,7 +8,7 @@ from torchscale.architecture.config import DecoderConfig
 from torchscale.architecture.decoder import Decoder
 from transformers import AutoTokenizer
 
-from argparse import ArgumentParser
+# from argparse import ArgumentParser
 
 
 def Embedding(num_embeddings, embedding_dim, padding_idx=None):
@@ -49,32 +49,32 @@ class Transformer(nn.Module):
             module.weight.data.normal_(mean=0.0, std=std)
 
     def build_model(self):
-        if self.args.model_name == "trm_medium":
+        if self.args.model_name_trm == "trm_medium":
             self.config.decoder_embed_dim = 1024
             self.config.decoder_ffn_embed_dim = 2048
             self.config.decoder_layers = 16
             self.config.decoder_retention_heads = 4
-        elif self.args.model_name == "trm_xl":
+        elif self.args.model_name_trm == "trm_xl":
             self.config.decoder_embed_dim = 2048
             self.config.decoder_ffn_embed_dim = 4096
             self.config.decoder_layers = 24
             self.config.decoder_retention_heads = 8
-        elif self.args.model_name == "trm_3b":
+        elif self.args.model_name_trm == "trm_3b":
             self.config.decoder_embed_dim = 2560
             self.config.decoder_ffn_embed_dim = 5120
             self.config.decoder_layers = 32
             self.config.decoder_retention_heads = 10
-        elif self.args.model_name == "trm_7b":
+        elif self.args.model_name_trm == "trm_7b":
             self.config.decoder_embed_dim = 4096
             self.config.decoder_ffn_embed_dim = 8192
             self.config.decoder_layers = 32
             self.config.decoder_retention_heads = 16
-        elif self.args.model_name == "trm_13b":
+        elif self.args.model_name_trm == "trm_13b":
             self.config.decoder_embed_dim = 5120
             self.config.decoder_ffn_embed_dim = 10240
             self.config.decoder_layers = 40
             self.config.decoder_retention_heads = 20
-        elif self.args.model_name == "trm_65b":
+        elif self.args.model_name_trm == "trm_65b":
             self.config.decoder_embed_dim = 8192
             self.config.decoder_ffn_embed_dim = 16384
             self.config.decoder_layers = 64

@@ -17,7 +17,6 @@ wd = Path(__file__).parent.parent.resolve()
 sys.path.append(str(wd))
 
 # from lit_gpt.model import GPT, Block, Config
-
 from lit_gpt.config_retnet import arg_loader
 from lit_gpt.packed_dataset import CombinedDataset, PackedDataset
 from lit_gpt.speed_monitor import SpeedMonitorFabric as SpeedMonitor
@@ -50,6 +49,11 @@ data_config_val = [
 def setup():
     # training arguments
     args = arg_loader()
+    if args.model_type == 'retnet':
+        from torchscale.architecture.retnet import DecoderLayer
+    elif args.model_type == 'transformer':
+        from torchscale.architecture.retnet import DecoderLayer
+
     precision = args.precision or get_default_supported_precision(training=True)
 
     args.gradient_accumulation_steps = args.batch_size // args.micro_batch_size
@@ -58,11 +62,6 @@ def setup():
     args.lr_decay_iters = args.max_iters
 
     args.out_dir = Path(args.out_dir) / args.exp_name
-
-    if args.model_type == 'retnet':
-        from torchscale.architecture.retnet import DecoderLayer
-    elif args.model_type == 'transformer':
-        from torchscale.architecture.retnet import DecoderLayer
 
     # if args.devices > 1:
     strategy = FSDPStrategy(

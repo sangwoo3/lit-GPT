@@ -12,7 +12,7 @@
     "exec_start_in_all_mpi_pods":true,
     "enable_rdma":false,
     "rdma_in_same_module":false,
-    "start_cmd":"bash /apdcephfs_us/share_300814644/user/swcho/code/lit-GPT/jizhi/scripts/retnet_3b_2k_1g_test.sh",
+    "start_cmd":"bash /apdcephfs_us/share_300814644/user/swcho/code/lit-GPT/jizhi/scripts/retnet_267M_2k_16g_test.sh",
     "image_full_name":"mirrors.tencent.com/ai-lab-seattle/retnet:v0920",
     "envs": {
       "HUNYUAN_TASK_CATEGORY": "LLM",

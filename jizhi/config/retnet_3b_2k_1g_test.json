@@ -1,10 +1,10 @@
 {
     "Token":"QttsISznR9raioKcGvVlNQ",
-    "business_flag":"TaiJi_HYAide_AILab__SI_SH_A100H",
+    "business_flag":"AILab_Tukwila",
     "mount_ceph_business_flag":"HunyuanAide",
-    "task_flag":"train_RetNet_3B_2K",
-    "model_local_file_path":"/apdcephfs_cq3/share_1603164/user/swcho/code/lit-GPT",
-    "host_num":8,
+    "task_flag":"train_RetNet_267M_2K_16G",
+    "model_local_file_path":"/apdcephfs_us/share_300814644/user/swcho/code/lit-GPT",
+    "host_num":2,
     "host_gpu_num":8,
     "GPUName":"A100PRO",
     "cuda_version":"11.0",
@@ -12,7 +12,7 @@
     "exec_start_in_all_mpi_pods":true,
     "enable_rdma":false,
     "rdma_in_same_module":false,
-    "start_cmd":"bash /apdcephfs/share_300000800/user/swcho/code/lit-GPT/jizhi/scripts/retnet_3b_2k_64g.sh",
+    "start_cmd":"bash /apdcephfs_us/share_300814644/user/swcho/code/lit-GPT/jizhi/scripts/retnet_3b_2k_1g_test.sh",
     "image_full_name":"mirrors.tencent.com/ai-lab-seattle/retnet:v0920",
     "envs": {
       "HUNYUAN_TASK_CATEGORY": "LLM",

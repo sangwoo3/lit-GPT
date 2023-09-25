@@ -10,7 +10,7 @@ DATA_PATH=${PROJ_DIR}/data
 HF_DIR=${PROJ_DIR}/huggingface_models
 OUTPUT_DIR=${PROJ_DIR}/output
 
-EXP_NAME="retnet_3b_2k_64g"
+EXP_NAME="retnet_267M_2k_16g"
 
 OUTPUT_EXP_DIR=${OUTPUT_DIR}/${EXP_NAME}
 OUTPUT_CODE_DIR=${OUTPUT_EXP_DIR}/code
@@ -85,19 +85,20 @@ DATA_ARGS="--out_dir ${OUTPUT_EXP_DIR} \
 --hf_dir ${HF_DIR}"
 
 TRAIN_ARGS="--exp_name ${EXP_NAME} \
---model_name retnet_3b \
---max_iters 200000 \
---warmup_iters 3000 \
---save_interval 500 \
---eval_interval 1000 \
+--model_name retnet_medium \
+--max_iters 800000 \
+--warmup_iters 2400 \
+--save_interval 1000 \
+--eval_interval 500 \
 --log_interval 1 \
---eval_iters 20 \
+--eval_iters 80 \
 --micro_batch_size 4 \
---batch_size 32 \
+--batch_size 128 \
 --learning_rate 3e-4 \
---train_data_dir /apdcephfs/share_300000800/user/swcho/data/pretrain_retnet \
---val_data_dir /apdcephfs/share_300000800/user/swcho/data/pretrain_retnet \
+--train_data_dir /apdcephfs_us/share_300814644/user/swcho/data/pretrain_retnet \
+--val_data_dir /apdcephfs_us/share_300814644/user/swcho/data/pretrain_retnet \
 --prefix PCS-merged-360G \
+--precision 32
 "
 #--devices ${GPUS_PER_NODE} \
 #--num_nodes ${HOST_NUM}"

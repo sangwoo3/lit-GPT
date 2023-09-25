@@ -79,8 +79,8 @@ class Transformer(nn.Module):
             self.config.decoder_ffn_embed_dim = 16384
             self.config.decoder_layers = 64
             self.config.decoder_retention_heads = 32
-        # self.config.n_layer = self.config.decoder_layers
-        # self.config.n_embd = self.config.decoder_embed_dim
+        self.config.n_layer = self.config.decoder_layers
+        self.config.n_embd = self.config.decoder_embed_dim
 
         embed_tokens = Embedding(self.config.vocab_size, self.config.decoder_embed_dim)
         self.model = Decoder(self.config, embed_tokens=embed_tokens)

@@ -80,8 +80,8 @@ class RetNet(nn.Module):
         # print('in model config with args', self.config.__dict__)
         # self.config.block_size = self.args.block_size
 
-        # self.config.n_layer = self.config.decoder_layers
-        # self.config.n_embd = self.config.decoder_embed_dim
+        self.config.n_layer = self.config.decoder_layers
+        self.config.n_embd = self.config.decoder_embed_dim
 
         # self.config.activation_fn = "swish"   # activation_fn for FF; default of activation for RetNet is swish
 

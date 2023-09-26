@@ -8,7 +8,7 @@ def arg_loader():
     parser.add_argument("--model_name", type=str, choices=['retnet_medium', 'retnet_xl', 'retnet_3b',
                                                            'retnet_7b', 'retnet_13b', 'retnet_65b'],
                         default='retnet_3b', help='267M, 1340M, 2682M, 6707M, 12914M, 52073M')
-    parser.add_argument("--model_name_trm", type=str, choices=['trm_medium', 'trm_xl', 'trm_3b',
+    parser.add_argument("--model_name_trm", type=str, choices=['trm_medium', 'trm_large', 'trm_3b',
                                                                'trm_7b', 'trm_13b', 'trm_65b'],
                         default='trm_3b')
     parser.add_argument("--exp_name", type=str)

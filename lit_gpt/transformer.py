@@ -51,34 +51,29 @@ class Transformer(nn.Module):
     def build_model(self):
         if self.args.model_name_trm == "trm_medium":
             self.config.decoder_embed_dim = 1024
-            self.config.decoder_ffn_embed_dim = 2048
-            self.config.decoder_layers = 16
-            self.config.decoder_retention_heads = 4
-        elif self.args.model_name_trm == "trm_xl":
-            self.config.decoder_embed_dim = 2048
-            self.config.decoder_ffn_embed_dim = 4096
             self.config.decoder_layers = 24
-            self.config.decoder_retention_heads = 8
+            self.config.decoder_attention_heads = 16
+        elif self.args.model_name_trm == "trm_large":
+            self.config.decoder_embed_dim = 1536
+            self.config.decoder_layers = 24
+            self.config.decoder_attention_heads = 16
         elif self.args.model_name_trm == "trm_3b":
             self.config.decoder_embed_dim = 2560
-            self.config.decoder_ffn_embed_dim = 5120
             self.config.decoder_layers = 32
-            self.config.decoder_retention_heads = 10
+            self.config.decoder_attention_heads = 32
         elif self.args.model_name_trm == "trm_7b":
             self.config.decoder_embed_dim = 4096
-            self.config.decoder_ffn_embed_dim = 8192
             self.config.decoder_layers = 32
-            self.config.decoder_retention_heads = 16
+            self.config.decoder_attention_heads = 32
         elif self.args.model_name_trm == "trm_13b":
             self.config.decoder_embed_dim = 5120
-            self.config.decoder_ffn_embed_dim = 10240
             self.config.decoder_layers = 40
-            self.config.decoder_retention_heads = 20
+            self.config.decoder_attention_heads = 40
         elif self.args.model_name_trm == "trm_65b":
             self.config.decoder_embed_dim = 8192
-            self.config.decoder_ffn_embed_dim = 16384
             self.config.decoder_layers = 64
-            self.config.decoder_retention_heads = 32
+            self.config.decoder_attention_heads = 64
+        self.config.decoder_ffn_embed_dim = self.config.decoder_embed_dim * 4
         self.config.n_layer = self.config.decoder_layers
         self.config.n_embd = self.config.decoder_embed_dim
 

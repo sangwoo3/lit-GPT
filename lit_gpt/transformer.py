@@ -52,7 +52,8 @@ class Transformer(nn.Module):
         if self.args.model_name_trm == "trm_medium":
             self.config.decoder_embed_dim = 1024
             self.config.decoder_layers = 24
-            self.config.decoder_attention_heads = 16
+            self.config.decoder_attention_heads = 4
+        # TODO: check if below models have the same size to corresponding RetNet
         elif self.args.model_name_trm == "trm_large":
             self.config.decoder_embed_dim = 1536
             self.config.decoder_layers = 24
@@ -73,7 +74,7 @@ class Transformer(nn.Module):
             self.config.decoder_embed_dim = 8192
             self.config.decoder_layers = 64
             self.config.decoder_attention_heads = 64
-        self.config.decoder_ffn_embed_dim = self.config.decoder_embed_dim * 4
+        self.config.decoder_ffn_embed_dim = self.config.decoder_embed_dim * 2
         self.config.n_layer = self.config.decoder_layers
         self.config.n_embd = self.config.decoder_embed_dim
 

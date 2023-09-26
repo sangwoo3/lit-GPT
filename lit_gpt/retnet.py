@@ -33,7 +33,7 @@ class RetNet(nn.Module):
         self.tokenizer = AutoTokenizer.from_pretrained(self.tokenizer_dir)
 
         self.config = RetNetConfig()
-        self.config.override(vars(self.args))
+        # self.config.override(vars(self.args))
         self.config.__dict__.update(vars(self.args))
         self.config.vocab_size = len(self.tokenizer)
 

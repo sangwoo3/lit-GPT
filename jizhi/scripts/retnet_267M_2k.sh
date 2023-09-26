@@ -76,11 +76,11 @@ LAUNCH_ARGS="
              --node_rank $NODE_RANK \
              --main_address $MASTER_ADDR \
              --main_port $MASTER_PORT \
-             --precision 32-true \
+             --precision bf16-mixed \
              "
 #             --accelerator cuda \
 #              --strategy fsdp \
-#              --precision bf16-mixed \
+#              --precision bf16-mixed 16-mixed 32-true \
 
 DATA_ARGS="--out_dir ${OUTPUT_EXP_DIR} \
 --hf_dir ${HF_DIR}"

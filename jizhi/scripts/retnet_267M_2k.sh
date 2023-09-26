@@ -99,6 +99,9 @@ TRAIN_ARGS="--exp_name ${EXP_NAME} \
 --train_data_dir /apdcephfs_us/share_300814644/user/swcho/data/pretrain_retnet \
 --val_data_dir /apdcephfs_us/share_300814644/user/swcho/data/pretrain_retnet \
 --prefix PCS-merged-360G \
+--dropout 0.1 \
+--activation_dropout 0.1 \
+--subln \
 "
 #--devices ${GPUS_PER_NODE} \
 #--num_nodes ${HOST_NUM}"

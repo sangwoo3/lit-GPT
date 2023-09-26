@@ -1,7 +1,7 @@
 {
     "Token":"QttsISznR9raioKcGvVlNQ",
     "business_flag":"AILab_Tukwila",
-    "task_flag":"train_RetNet_267M_bf16",
+    "task_flag":"train_RetNet_267M_bf16_dr0.1",
     "model_local_file_path":"/apdcephfs_cq3/share_1603164/user/swcho/code/lit-GPT",
     "host_num":1,
     "host_gpu_num":8,

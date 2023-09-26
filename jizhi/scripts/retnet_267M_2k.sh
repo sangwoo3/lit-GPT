@@ -10,7 +10,7 @@ DATA_PATH=${PROJ_DIR}/data
 HF_DIR=${PROJ_DIR}/huggingface_models
 OUTPUT_DIR=${PROJ_DIR}/output
 
-EXP_NAME="retnet_267M_2k_bf32_deepnorm"
+EXP_NAME="retnet_267M_2k_bf32_nobias"
 
 OUTPUT_EXP_DIR=${OUTPUT_DIR}/${EXP_NAME}
 OUTPUT_CODE_DIR=${OUTPUT_EXP_DIR}/code

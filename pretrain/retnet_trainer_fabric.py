@@ -67,12 +67,12 @@ def setup():
                       # devices=args.devices,
                       # num_nodes=args.num_nodes,
                       strategy=strategy,
-                      precision=precision,
+                      # precision=precision,
                       loggers=logger,
                       accelerator='gpu',
                       )
 
-    fabric.print(f"precision: {precision}")
+    fabric.print(f"default precision: {precision}")
     main(fabric, args)
     # fabric.launch(main, args)
 

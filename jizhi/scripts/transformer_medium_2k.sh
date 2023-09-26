@@ -10,7 +10,7 @@ DATA_PATH=${PROJ_DIR}/data
 HF_DIR=${PROJ_DIR}/huggingface_models
 OUTPUT_DIR=${PROJ_DIR}/output
 
-EXP_NAME="retnet_267M_2k_bf32_nobias"
+EXP_NAME="transformer_medium_2k_bf16_share_nobias"
 
 OUTPUT_EXP_DIR=${OUTPUT_DIR}/${EXP_NAME}
 OUTPUT_CODE_DIR=${OUTPUT_EXP_DIR}/code
@@ -100,6 +100,7 @@ TRAIN_ARGS="--exp_name ${EXP_NAME} \
 --val_data_dir /apdcephfs_us/share_300814644/user/swcho/data/pretrain_retnet \
 --prefix PCS-merged-360G \
 --subln \
+--share_decoder_input_output_embed \
 "
 #--dropout 0.1 \
 #--activation_dropout 0.1 \

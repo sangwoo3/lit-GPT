@@ -25,7 +25,6 @@ class MultiheadAttention(nn.Module):
         self_attention=False,
         encoder_decoder_attention=False,
         subln=False,
-        bias=True,
     ):
         super().__init__()
         self.args = args
@@ -38,11 +37,11 @@ class MultiheadAttention(nn.Module):
         self.encoder_decoder_attention = encoder_decoder_attention
         assert self.self_attention ^ self.encoder_decoder_attention
 
-        self.k_proj = MultiwayWrapper(args, nn.Linear(embed_dim, embed_dim, bias=bias))
-        self.v_proj = MultiwayWrapper(args, nn.Linear(embed_dim, embed_dim, bias=bias))
-        self.q_proj = MultiwayWrapper(args, nn.Linear(embed_dim, embed_dim, bias=bias))
+        self.k_proj = MultiwayWrapper(args, nn.Linear(embed_dim, embed_dim, bias=args.bias))
+        self.v_proj = MultiwayWrapper(args, nn.Linear(embed_dim, embed_dim, bias=args.bias))
+        self.q_proj = MultiwayWrapper(args, nn.Linear(embed_dim, embed_dim, bias=args.bias))
         self.out_proj = MultiwayWrapper(
-            args, nn.Linear(embed_dim, embed_dim, bias=bias)
+            args, nn.Linear(embed_dim, embed_dim, bias=args.bias)
         )
         self.inner_attn_ln = (
             MultiwayWrapper(args, LayerNorm(self.embed_dim, eps=args.layernorm_eps))
@@ -61,7 +60,8 @@ class MultiheadAttention(nn.Module):
         nn.init.xavier_uniform_(self.v_proj.weight, gain=1 / math.sqrt(2))
         nn.init.xavier_uniform_(self.q_proj.weight, gain=1 / math.sqrt(2))
         nn.init.xavier_uniform_(self.out_proj.weight)
-        nn.init.constant_(self.out_proj.bias, 0.0)
+        if self.args.bias:
+            nn.init.constant_(self.out_proj.bias, 0.0)
 
     def forward(
         self,

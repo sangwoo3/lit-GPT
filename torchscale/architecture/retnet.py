@@ -179,6 +179,7 @@ class DecoderLayer(nn.Module):
                 args.activation_dropout,
                 args.layernorm_eps,
                 args.subln,
+                args.bias,
         )
 
     def build_retention(self, embed_dim, args):
@@ -186,7 +187,6 @@ class DecoderLayer(nn.Module):
                 args,
                 embed_dim,
                 args.decoder_retention_heads,
-                bias=args.bias,
         )
 
     def residual_connection(self, x, residual):

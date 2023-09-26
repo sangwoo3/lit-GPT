@@ -103,6 +103,7 @@ class DecoderLayer(nn.Module):
             args.activation_dropout,
             args.layernorm_eps,
             args.subln,
+            args.bias,
         )
 
     def build_self_attention(self, embed_dim, args):

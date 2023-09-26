@@ -48,7 +48,6 @@ class MultiScaleRetention(nn.Module):
         num_heads,
         value_factor=2,
         gate_fn="swish",
-        bias=True,
     ):
         super().__init__()
         self.args = args
@@ -61,12 +60,12 @@ class MultiScaleRetention(nn.Module):
         
         self.gate_fn = get_activation_fn(activation=str(gate_fn))
 
-        self.q_proj = MultiwayWrapper(args, nn.Linear(embed_dim, embed_dim, bias=bias))
-        self.k_proj = MultiwayWrapper(args, nn.Linear(embed_dim, embed_dim, bias=bias))
-        self.v_proj = MultiwayWrapper(args, nn.Linear(embed_dim, embed_dim * self.factor, bias=bias))
-        self.g_proj = MultiwayWrapper(args, nn.Linear(embed_dim, embed_dim * self.factor, bias=bias))
+        self.q_proj = MultiwayWrapper(args, nn.Linear(embed_dim, embed_dim, bias=args.bias))
+        self.k_proj = MultiwayWrapper(args, nn.Linear(embed_dim, embed_dim, bias=args.bias))
+        self.v_proj = MultiwayWrapper(args, nn.Linear(embed_dim, embed_dim * self.factor, bias=args.bias))
+        self.g_proj = MultiwayWrapper(args, nn.Linear(embed_dim, embed_dim * self.factor, bias=args.bias))
         
-        self.out_proj = MultiwayWrapper(args, nn.Linear(embed_dim * self.factor, embed_dim, bias=bias))
+        self.out_proj = MultiwayWrapper(args, nn.Linear(embed_dim * self.factor, embed_dim, bias=args.bias))
 
         self.group_norm = MultiwayWrapper(args, LayerNorm(self.head_dim, eps=1e-6, elementwise_affine=False))
         self.reset_parameters()

@@ -10,7 +10,7 @@ DATA_PATH=${PROJ_DIR}/data
 HF_DIR=${PROJ_DIR}/huggingface_models
 OUTPUT_DIR=${PROJ_DIR}/output
 
-EXP_NAME="retnet_267M_2k_fp32"
+EXP_NAME="retnet_267M_2k_bf32_deepnorm"
 
 OUTPUT_EXP_DIR=${OUTPUT_DIR}/${EXP_NAME}
 OUTPUT_CODE_DIR=${OUTPUT_EXP_DIR}/code
@@ -99,11 +99,14 @@ TRAIN_ARGS="--exp_name ${EXP_NAME} \
 --train_data_dir /apdcephfs_us/share_300814644/user/swcho/data/pretrain_retnet \
 --val_data_dir /apdcephfs_us/share_300814644/user/swcho/data/pretrain_retnet \
 --prefix PCS-merged-360G \
---dropout 0.1 \
---activation_dropout 0.1 \
---share_decoder_input_output_embed \
---subln \
+--deepnorm \
 "
+#--dropout 0.1 \
+#--activation_dropout 0.1 \
+#--share_decoder_input_output_embed \
+#--deepnorm \
+#--subln \
+
 #--devices ${GPUS_PER_NODE} \
 #--num_nodes ${HOST_NUM}"
 

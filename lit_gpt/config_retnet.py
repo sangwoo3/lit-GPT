@@ -30,6 +30,8 @@ def arg_loader():
     parser.add_argument("--decay_lr", action="store_false")
     parser.add_argument("--min_lr", type=float, default=6e-5)
     parser.add_argument("--precision", type=str)
+    parser.add_argument("--deepnorm", action="store_true")
+    parser.add_argument("--subln", action="store_true")
 
     parser.add_argument("--gradient_clip_val", type=float, default=1.0)  # avoid fp16 nan
     # parser.add_argument("--devices", type=int, default=1)

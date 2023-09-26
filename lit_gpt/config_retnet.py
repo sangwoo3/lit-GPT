@@ -37,6 +37,7 @@ def arg_loader():
     parser.add_argument("--share_decoder_input_output_embed", action="store_true")
     parser.add_argument("--dropout", type=float, default=0.0)
     parser.add_argument("--activation_dropout", type=float, default=0.0)
+    parser.add_argument("--bias", action="store_true")
 
     parser.add_argument("--gradient_clip_val", type=float, default=1.0)  # avoid fp16 nan
     # parser.add_argument("--devices", type=int, default=1)

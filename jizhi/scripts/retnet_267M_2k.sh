@@ -101,6 +101,7 @@ TRAIN_ARGS="--exp_name ${EXP_NAME} \
 --prefix PCS-merged-360G \
 --dropout 0.1 \
 --activation_dropout 0.1 \
+--share_decoder_input_output_embed \
 --subln \
 "
 #--devices ${GPUS_PER_NODE} \

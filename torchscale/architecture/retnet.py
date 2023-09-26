@@ -186,7 +186,7 @@ class DecoderLayer(nn.Module):
                 args,
                 embed_dim,
                 args.decoder_retention_heads,
-                args.bias,
+                bias=args.bias,
         )
 
     def residual_connection(self, x, residual):

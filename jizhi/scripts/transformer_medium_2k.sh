@@ -86,7 +86,8 @@ DATA_ARGS="--out_dir ${OUTPUT_EXP_DIR} \
 --hf_dir ${HF_DIR}"
 
 TRAIN_ARGS="--exp_name ${EXP_NAME} \
---model_name retnet_medium \
+--model_type transformer \
+--model_name_trm trm_medium \
 --max_iters 1600000 \
 --warmup_iters 4800 \
 --save_interval 1000 \

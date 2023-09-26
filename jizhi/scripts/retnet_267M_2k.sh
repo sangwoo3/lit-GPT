@@ -10,7 +10,7 @@ DATA_PATH=${PROJ_DIR}/data
 HF_DIR=${PROJ_DIR}/huggingface_models
 OUTPUT_DIR=${PROJ_DIR}/output
 
-EXP_NAME="retnet_267M_2k_16g"
+EXP_NAME="retnet_267M_2k_fp32"
 
 OUTPUT_EXP_DIR=${OUTPUT_DIR}/${EXP_NAME}
 OUTPUT_CODE_DIR=${OUTPUT_EXP_DIR}/code
@@ -87,14 +87,14 @@ DATA_ARGS="--out_dir ${OUTPUT_EXP_DIR} \
 
 TRAIN_ARGS="--exp_name ${EXP_NAME} \
 --model_name retnet_medium \
---max_iters 800000 \
---warmup_iters 2400 \
+--max_iters 1600000 \
+--warmup_iters 4800 \
 --save_interval 1000 \
 --eval_interval 500 \
 --log_interval 1 \
---eval_iters 80 \
+--eval_iters 160 \
 --micro_batch_size 4 \
---batch_size 128 \
+--batch_size 256 \
 --learning_rate 3e-4 \
 --train_data_dir /apdcephfs_us/share_300814644/user/swcho/data/pretrain_retnet \
 --val_data_dir /apdcephfs_us/share_300814644/user/swcho/data/pretrain_retnet \

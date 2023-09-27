@@ -59,8 +59,7 @@ def arg_loader():
 
     parser.add_argument("--seed", type=int, default=6060)
 
-    args = parser.parse_args()
-    return args
+    return parser
 
 
 def retnet_base_architecture(args):

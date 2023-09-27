@@ -12,7 +12,7 @@
     "enable_rdma":false,
     "rdma_in_same_module":false,
     "start_cmd":"sleep 1d",
-    "image_full_name":"mirrors.tencent.com/ai-lab-seattle/retnet:v0919",
+    "image_full_name":"mirrors.tencent.com/ai-lab-seattle/retnet:v0920",
     "envs": {
       "HUNYUAN_TASK_CATEGORY": "LLM",
       "HUNYUAN_TASK_MODEL_TYPE": "PRETRAIN",

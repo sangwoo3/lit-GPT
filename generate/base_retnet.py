@@ -122,7 +122,7 @@ def main(args) -> None:
     model.eval()
     model = fabric.setup_module(model)
 
-    tokenizer = TokenizerHF(checkpoint_dir)
+    tokenizer = TokenizerHF(args.hf_dir)
     encoded = tokenizer.encode(args.prompt, device=fabric.device)
     prompt_length = encoded.size(0)
     max_returned_tokens = prompt_length + args.max_new_tokens

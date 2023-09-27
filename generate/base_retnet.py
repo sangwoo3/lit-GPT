@@ -95,8 +95,8 @@ def main(args) -> None:
         from torchscale.architecture.decoder import DecoderLayer
 
     if args.strategy == "fsdp":
-        strategy = FSDPStrategy(auto_wrap_policy={DecoderLayer}, cpu_offload=False)
-    fabric = L.Fabric(devices=args.devices, precision=precision, strategy=strategy)
+        args.strategy = FSDPStrategy(auto_wrap_policy={DecoderLayer}, cpu_offload=False)
+    fabric = L.Fabric(devices=args.devices, precision=precision, strategy=args.strategy)
     fabric.launch()
 
     checkpoint_dir = Path(args.checkpoint_dir)

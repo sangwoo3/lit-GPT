@@ -182,8 +182,8 @@ def add_inference_args(parser):
                         help="Indicates the Fabric strategy setting to use.")
     parser.add_argument("--devices", type=int, default=1,
                         help="How many devices to use.")
-    parser.add_argument("--precision", type=str,
-                        help="Indicates the Fabric precision setting to use.")
+    # parser.add_argument("--precision", type=str,
+    #                     help="Indicates the Fabric precision setting to use.")
     return parser
 
 

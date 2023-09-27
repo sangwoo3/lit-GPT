@@ -42,7 +42,7 @@ def setup():
     if args.model_type == 'retnet':
         from torchscale.architecture.retnet import DecoderLayer
     elif args.model_type == 'transformer':
-        from torchscale.architecture.retnet import DecoderLayer
+        from torchscale.architecture.decoder import DecoderLayer
 
     # if args.devices > 1:
     strategy = FSDPStrategy(

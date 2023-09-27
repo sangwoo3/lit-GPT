@@ -1,6 +1,7 @@
 from lit_gpt.model import GPT
 from lit_gpt.config import Config
 from lit_gpt.tokenizer import Tokenizer
+from lit_gpt.tokenizer_HF import TokenizerHF
 
 from lightning_utilities.core.imports import RequirementCache
 
@@ -17,4 +18,4 @@ if not bool(_LIGHTNING_AVAILABLE):
     )
 
 
-__all__ = ["GPT", "Config", "Tokenizer"]
+__all__ = ["GPT", "Config", "Tokenizer", "TokenizerHF"]

@@ -114,10 +114,21 @@ def main(args) -> None:
         fabric.print(model.model)
     fabric.print(f"Time to instantiate model: {time.perf_counter() - t0:.02f} seconds.", file=sys.stderr)
 
-    t0 = time.perf_counter()
-    with lazy_load(checkpoint_path) as checkpoint:
-        model.load_state_dict(checkpoint.get("model", checkpoint), strict=True)
-    fabric.print(f"Time to load the model weights: {time.perf_counter() - t0:.02f} seconds.", file=sys.stderr)
+    # t0 = time.perf_counter()
+    # with lazy_load(checkpoint_path) as checkpoint:
+    #     model.load_state_dict(checkpoint.get("model", checkpoint), strict=True)
+    # fabric.print(f"Time to load the model weights: {time.perf_counter() - t0:.02f} seconds.", file=sys.stderr)
+
+    model = fabric.setup(model)
+    optimizer = torch.optim.AdamW(
+            model.parameters(), lr=args.learning_rate,
+            weight_decay=args.weight_decay, betas=(args.beta1, args.beta2), foreach=False
+    )
+    optimizer = fabric.setup_optimizers(optimizer)
+
+    state = {"model": model, "optimizer": optimizer, "hparams": model.config, "iter_num": 0, "step_count": 0}
+
+    fabric.load(str(checkpoint_path), state)
 
     model.eval()
     model = fabric.setup_module(model)

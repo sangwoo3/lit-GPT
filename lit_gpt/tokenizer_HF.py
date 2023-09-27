@@ -27,7 +27,7 @@ class TokenizerHF:
             eos: bool = False,
             max_length: int = -1,
     ) -> torch.Tensor:
-        tokens = self.processor.encode(string).ids
+        tokens = self.processor.encode(string)
         if bos:
             bos_id = self.bos_id
             if bos_id is None:

@@ -48,7 +48,7 @@ data_config_val = [
 
 def setup():
     # training arguments
-    args = arg_loader()
+    args = arg_loader.parse_args()
     if args.model_type == 'retnet':
         from torchscale.architecture.retnet import DecoderLayer
     elif args.model_type == 'transformer':

@@ -29,7 +29,7 @@ from lightning.fabric.loggers import TensorBoardLogger
 
 def setup():
     # training arguments
-    args = arg_loader()
+    args = arg_loader.parse_args()
     precision = args.precision or get_default_supported_precision(training=True)
 
     args.gradient_accumulation_steps = args.batch_size // args.micro_batch_size

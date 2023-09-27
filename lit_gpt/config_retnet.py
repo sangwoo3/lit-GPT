@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 
 
 def arg_loader():
-    parser = ArgumentParser()
+    parser = ArgumentParser(add_help=False)
     # Model
     parser.add_argument("--model_type", type=str, default='retnet', choices=['retnet', 'transformer'])
     parser.add_argument("--model_name", type=str, choices=['retnet_medium', 'retnet_xl', 'retnet_3b',

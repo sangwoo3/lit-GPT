@@ -156,7 +156,7 @@ def main(args) -> None:
 
 
 def add_inference_args(parser):
-    parser = ArgumentParser(parents=[parser],
+    parser = ArgumentParser(parents=[parser], add_help=False,
                             description="Generates text samples based on a pre-trained model and tokenizer.")
     parser.add_argument("--prompt", type=str, default="Hello, my name is",
                         help="The prompt string to use for generating the samples.")

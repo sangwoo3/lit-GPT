@@ -118,7 +118,10 @@ def main(args) -> None:
     t0 = time.perf_counter()
     with lazy_load(checkpoint_path) as checkpoint:
         fabric.print(checkpoint.keys())
-        model.load_state_dict(checkpoint.get("model", checkpoint), strict=True)
+        model_ckpt = checkpoint.get("model", checkpoint)
+        fabric.print(model_ckpt.keys())
+        model_ckpt = {'.'.join(k.split('.')[1:]): v for k, v in model_ckpt.items()}
+        model.load_state_dict(model_ckpt, strict=True)
     fabric.print(f"Time to load the model weights: {time.perf_counter() - t0:.02f} seconds.", file=sys.stderr)
 
     # model = fabric.setup(model)
@@ -213,6 +216,7 @@ if __name__ == "__main__":
     # CLI(main)
 
     # training arguments
+    main_arg_parser = ArgumentParser(description="meeting summarization finetune")
     parser = arg_loader()
     parser = add_inference_args(parser)
     args = parser.parse_args()

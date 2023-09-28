@@ -98,7 +98,7 @@ class RetNet(nn.Module):
     def max_positions(self):
         return self.config.max_target_positions
 
-    def forward(self, input_ids: torch.LongTensor = None,
+    def forward(self, input_ids,
                 incremental_state=None):
         logits, aux_dic = self.model(input_ids,
                                      incremental_state=incremental_state)

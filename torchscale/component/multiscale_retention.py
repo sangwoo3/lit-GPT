@@ -92,7 +92,7 @@ class MultiScaleRetention(nn.Module):
         output = output.transpose(1, 2)
         return output
 
-    def recurrent_forward(
+    def recurrent_forward_original(
         self,
         qr, kr, v,
         decay,
@@ -115,6 +115,37 @@ class MultiScaleRetention(nn.Module):
         incremental_state["scale"] = scale
 
         output = torch.sum(qr * kv, dim=3)
+        return output
+
+    def recurrent_forward(
+        self,
+        qr, kr, v,
+        decay,
+        incremental_state
+    ):
+        bsz, tgt_len, embed_dim = v.size()
+        vr = v.view(bsz, tgt_len, self.num_heads, self.head_dim).transpose(1, 2)
+        # qr, kr: (bsz, self.num_heads, tgt_len, self.key_dim)
+        # v:      (bsz, self.num_heads, tgt_len, self.head_dim)
+
+        # kv = kr.transpose(-1, -2) @ vr
+        # # kv: (bsz, self.num_heads, self.key_dim, self.head_dim)
+        kv = torch.einsum('bhtk,bhtd->bhtkd', kr, vr)
+
+        if "prev_key_value" in incremental_state:
+            prev_kv = incremental_state["prev_key_value"]
+            prev_scale = incremental_state["scale"]
+            scale = prev_scale * decay + 1
+            kv = prev_kv * (prev_scale.sqrt() * decay / scale.sqrt()).view(self.num_heads, 1, 1) + kv / scale.sqrt().view(self.num_heads, 1, 1)
+            # kv = prev_kv * decay.view(self.num_heads, 1, 1) + kv
+        else:
+            scale = torch.ones_like(decay)
+
+        incremental_state["prev_key_value"] = kv
+        incremental_state["scale"] = scale
+
+        # output = torch.sum(qr * kv, dim=3)
+        output = torch.sum(qr.unsqueeze(-1) * kv, dim=3)
         return output
     
     def chunk_recurrent_forward(

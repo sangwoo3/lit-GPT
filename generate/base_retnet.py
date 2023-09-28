@@ -34,7 +34,7 @@ def generate(
         temperature: float = 1.0,
         top_k: Optional[int] = None,
         eos_id: Optional[int] = None,
-        incremental_state = None,
+        incremental_state=None,
 ) -> torch.Tensor:
     """Takes a conditioning sequence (prompt) as input and continues to generate as many tokens as requested.
 
@@ -187,14 +187,14 @@ def main(args) -> None:
         #         top_k=args.top_k,
         #         incremental_state=args.incremental_state,
         # )
-        model, idx, max_new_tokens, block_size, temperature = 1.0, top_k = None, incremental_state = None
-        y  = generate_(model,
-                       encoded,
-                       max_returned_tokens,
-                       model.config.block_size,
-                       temperature=args.temperature,
-                       top_k=args.top_k,
-                       incremental_state=args.incremental_state)
+
+        y = generate_(model,
+                      encoded,
+                      max_returned_tokens,
+                      model.config.block_size,
+                      temperature=args.temperature,
+                      top_k=args.top_k,
+                      incremental_state=args.incremental_state)
         t = time.perf_counter() - t0
 
         model.reset_cache()

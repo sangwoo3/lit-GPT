@@ -62,7 +62,7 @@ def generate(
         x = idx.index_select(0, input_pos).view(1, -1)
 
         # forward
-        logits = model(x, max_seq_length, input_pos)
+        logits = model(x)  # , max_seq_length, input_pos)
         logits = logits[0, -1] / temperature
 
         # optionally crop the logits to only the top k options
@@ -119,7 +119,7 @@ def main(args) -> None:
     with lazy_load(checkpoint_path) as checkpoint:
         fabric.print(checkpoint.keys())
         model_ckpt = checkpoint.get("model", checkpoint)
-        fabric.print(model_ckpt.keys())
+        # fabric.print(model_ckpt.keys())
         # model_ckpt = {'.'.join(k.split('.')[1:]): v for k, v in model_ckpt.items()}
         model.load_state_dict(model_ckpt, strict=True)
     fabric.print(f"Time to load the model weights: {time.perf_counter() - t0:.02f} seconds.", file=sys.stderr)

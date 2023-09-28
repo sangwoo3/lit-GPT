@@ -141,6 +141,7 @@ def main(args) -> None:
 
     tokenizer = TokenizerHF(args.hf_dir)
     encoded = tokenizer.encode(args.prompt, device=fabric.device)
+    fabric.print(encoded)
     prompt_length = encoded.size(0)
     max_returned_tokens = prompt_length + args.max_new_tokens
     assert max_returned_tokens <= model.config.block_size, (

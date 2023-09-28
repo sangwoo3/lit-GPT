@@ -226,7 +226,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.recurrent:
-        args.incremental_state["is_first_step"] = True
+        args.incremental_state = {}
+        args.incremental_state = args.incremental_state.get("is_first_step", True)
     else:
         args.incremental_state = None
 

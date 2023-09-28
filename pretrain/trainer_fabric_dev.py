@@ -11,6 +11,7 @@ import lightning as L
 import torch
 from lightning.fabric.strategies import FSDPStrategy
 from torch.utils.data import DataLoader
+from argparse import ArgumentParser
 
 # support running without installing as a package
 wd = Path(__file__).parent.parent.resolve()
@@ -48,7 +49,9 @@ data_config_val = [
 
 def setup():
     # training arguments
-    args = arg_loader.parse_args()
+    parser = ArgumentParser(description="Train RetNet Dev")
+    parser = arg_loader(parser)
+    args = parser.parse_args()
     if args.model_type == 'retnet':
         from torchscale.architecture.retnet import DecoderLayer
     elif args.model_type == 'transformer':

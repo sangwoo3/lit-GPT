@@ -11,6 +11,7 @@ import lightning as L
 import torch
 from lightning.fabric.strategies import FSDPStrategy
 from torch.utils.data import DataLoader
+from argparse import ArgumentParser
 
 # support running without installing as a package
 wd = Path(__file__).parent.parent.resolve()
@@ -29,7 +30,9 @@ from lightning.fabric.loggers import TensorBoardLogger
 
 def setup():
     # training arguments
-    args = arg_loader.parse_args()
+    parser = ArgumentParser(description="Train RetNet")
+    parser = arg_loader(parser)
+    args = parser.parse_args()
     precision = args.precision or get_default_supported_precision(training=True)
 
     args.gradient_accumulation_steps = args.batch_size // args.micro_batch_size

@@ -34,6 +34,7 @@ def generate(
         temperature: float = 1.0,
         top_k: Optional[int] = None,
         eos_id: Optional[int] = None,
+        incremental_state = None,
 ) -> torch.Tensor:
     """Takes a conditioning sequence (prompt) as input and continues to generate as many tokens as requested.
 
@@ -62,7 +63,9 @@ def generate(
         x = idx.index_select(0, input_pos).view(1, -1)
 
         # forward
-        logits = model(x)  # , max_seq_length, input_pos)
+        logits = model(x,
+                       incremental_state=incremental_state,
+                       )  # , max_seq_length, input_pos)
         logits = logits[0, -1] / temperature
 
         # optionally crop the logits to only the top k options
@@ -141,7 +144,6 @@ def main(args) -> None:
 
     tokenizer = TokenizerHF(args.hf_dir)
     encoded = tokenizer.encode(args.prompt, device=fabric.device)
-    fabric.print(encoded)
     prompt_length = encoded.size(0)
     max_returned_tokens = prompt_length + args.max_new_tokens
     assert max_returned_tokens <= model.config.block_size, (
@@ -159,6 +161,7 @@ def main(args) -> None:
                 max_seq_length=max_returned_tokens,
                 temperature=args.temperature,
                 top_k=args.top_k,
+                incremental_state=args.incremental_state,
         )
         t = time.perf_counter() - t0
 
@@ -221,5 +224,10 @@ if __name__ == "__main__":
     parser = arg_loader(parser)
     parser = add_inference_args(parser)
     args = parser.parse_args()
+
+    if args.recurrent:
+        args.incremental_state["is_first_step"] = True
+    else:
+        args.incremental_state = None
 
     main(args)

@@ -401,6 +401,7 @@ class RetNetDecoder(nn.Module):
             features_only=False,
             return_all_hiddens=False,
             token_embeddings=None,
+            inference=False,
             **kwargs
     ):
         # embed tokens
@@ -416,7 +417,7 @@ class RetNetDecoder(nn.Module):
         else:
             slen = prev_output_tokens.size(1)
         # relative position
-        if self.xpos_cache is None:
+        if self.xpos_cache is None or inference:
             self.xpos_cache = self.build_xpos_cache(slen, self.angle, self.decay, self.recurrent_chunk_size,
                                                     incremental_state is not None and not is_first_step,
                                                     self.chunkwise_recurrent)

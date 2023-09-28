@@ -99,7 +99,9 @@ class RetNet(nn.Module):
         return self.config.max_target_positions
 
     def forward(self, input_ids,
-                incremental_state=None):
+                incremental_state=None,
+                inference=False):
         logits, aux_dic = self.model(input_ids,
-                                     incremental_state=incremental_state)
+                                     incremental_state=incremental_state,
+                                     inference=inference)
         return logits

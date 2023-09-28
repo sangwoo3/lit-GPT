@@ -114,6 +114,7 @@ def main(args) -> None:
         elif args.model_type == 'transformer':
             model = Transformer(args)
         config = model.config.__dict__
+        config = dict(sorted(config.items()))
         fabric.print(f"Model configuration {config}")
         fabric.print(model.model)
     fabric.print(f"Time to instantiate model: {time.perf_counter() - t0:.02f} seconds.", file=sys.stderr)
@@ -227,7 +228,7 @@ if __name__ == "__main__":
 
     if args.recurrent:
         args.incremental_state = {}
-        args.incremental_state = args.incremental_state.get("is_first_step", True)
+        args.incremental_state["is_first_step"] = args.incremental_state.get("is_first_step", True)
     else:
         args.incremental_state = None
 

@@ -188,6 +188,8 @@ def main(args) -> None:
         #         incremental_state=args.incremental_state,
         # )
 
+        if len(encoded.size()) == 1:
+            encoded = encoded.unsqueeze(0)
         y = generate_(model,
                       encoded,
                       max_returned_tokens,

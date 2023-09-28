@@ -102,6 +102,7 @@ def main(args) -> None:
     checkpoint_dir = Path(args.checkpoint_dir)
     # check_valid_checkpoint_dir(checkpoint_dir)
     checkpoint_path = sorted(checkpoint_dir.glob("*.pth"))[-1]
+    fabric.print(f"checkpoint: {str(checkpoint_path)}")
 
     t0 = time.perf_counter()
     with fabric.init_module(empty_init=True):

@@ -40,5 +40,7 @@ class TokenizerHF:
         return torch.tensor(tokens, dtype=torch.int, device=device)
 
     def decode(self, tensor: torch.Tensor) -> str:
-        tokens = [tensor.item()] if tensor.ndim == 0 else tensor.tolist()
+        # assume not batch decode
+        tokens = [tensor.item()] if tensor.ndim == 0 else tensor.squeeze().tolist()
+        # decoded = [self.processor.decode(tokens) for tokens in token_list]
         return self.processor.decode(tokens)

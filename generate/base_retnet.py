@@ -199,7 +199,7 @@ def main(args) -> None:
                       incremental_state=args.incremental_state)
         t = time.perf_counter() - t0
 
-        model.reset_cache()
+        # model.reset_cache()
         fabric.print(tokenizer.decode(y))
         tokens_generated = y.size(0) - prompt_length
         fabric.print(

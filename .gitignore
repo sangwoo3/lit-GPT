@@ -6,11 +6,12 @@ build
 .venv
 .vscode
 
+jizhi
+
 # data
 data
 datasets
 checkpoints
 out
 wandb
-
 tests/original_falcon_40b.py

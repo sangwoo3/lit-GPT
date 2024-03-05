@@ -11,29 +11,37 @@ from lightning.fabric.strategies import FSDPStrategy
 from lm_eval import base, evaluator, tasks
 from lm_eval.base import BaseLM
 
+from transformers import AutoTokenizer
+from argparse import ArgumentParser
+
 # support running without installing as a package
 wd = Path(__file__).parent.parent.resolve()
 sys.path.append(str(wd))
 
 from generate.base import generate
-from lit_gpt import GPT, Config, Tokenizer
-from lit_gpt.model import Block
+from lit_gpt import TokenizerHF
+# from lit_gpt import GPT, Config, Tokenizer
+# from lit_gpt.model import Block
 from lit_gpt.utils import check_valid_checkpoint_dir, get_default_supported_precision, lazy_load, quantization
+from lit_gpt.config_retnet import arg_loader
+from lit_gpt.retnet import RetNet
+from lit_gpt.transformer import Transformer
 
 
 class EvalHarnessBase(BaseLM):
     # Credits:
     # https://github.com/EleutherAI/gpt-neox/blob/main/eval_tasks/eval_adapter.py
     def __init__(
-        self,
-        checkpoint_dir: str = "",
-        precision: str = "bf16-true",
-        batch_size=1,
-        temperature=1.0,
-        device="auto",
-        devices: int = 1,
-        strategy: str = "auto",
-        quantize: Optional[Literal["bnb.nf4", "bnb.nf4-dq", "bnb.fp4", "bnb.fp4-dq", "bnb.int8", "gptq.int4"]] = None,
+            self,
+            checkpoint_dir: str = "",
+            precision: str = "bf16-true",
+            batch_size=1,
+            temperature=1.0,
+            device="auto",
+            devices: int = 1,
+            strategy: str = "auto",
+            quantize: Optional[
+                Literal["bnb.nf4", "bnb.nf4-dq", "bnb.fp4", "bnb.fp4-dq", "bnb.int8", "gptq.int4"]] = None,
     ):
         super().__init__()
         assert isinstance(device, str)
@@ -42,31 +50,30 @@ class EvalHarnessBase(BaseLM):
         self.batch_size_per_gpu = batch_size
         self.temperature = temperature
 
+        if args.model_type == 'retnet':
+            from torchscale.architecture.retnet import DecoderLayer
+        elif args.model_type == 'transformer':
+            from torchscale.architecture.decoder import DecoderLayer
+
         if strategy == "fsdp":
-            strategy = FSDPStrategy(auto_wrap_policy={Block}, cpu_offload=False)
+            strategy = FSDPStrategy(auto_wrap_policy={DecoderLayer}, cpu_offload=False)
         self.fabric = fabric = L.Fabric(devices=devices, precision=precision, strategy=strategy)
+        # single node
         fabric.launch()
 
         checkpoint_dir = Path(checkpoint_dir)
-        check_valid_checkpoint_dir(checkpoint_dir)
+        # check_valid_checkpoint_dir(checkpoint_dir)
+        checkpoint_path = sorted(checkpoint_dir.glob("*.pth"))[-1]
 
-        with open(checkpoint_dir / "lit_config.json") as fp:
-            config = Config(**json.load(fp))
-
-        if quantize is not None and devices > 1:
-            raise NotImplementedError
-        if quantize == "gptq.int4":
-            model_file = "lit_model_gptq.4bit.pth"
-            if not (checkpoint_dir / model_file).is_file():
-                raise ValueError("Please run `python quantize/gptq.py` first")
-        else:
-            model_file = "lit_model.pth"
-        checkpoint_path = checkpoint_dir / model_file
-
-        fabric.print(f"Loading model {str(checkpoint_path)!r} with {config.__dict__}", file=sys.stderr)
         t0 = time.perf_counter()
-        with fabric.init_module(empty_init=True), quantization(quantize):
-            model = GPT(config)
+        with fabric.init_module(empty_init=True):
+            if args.model_type == 'retnet':
+                model = RetNet(args)
+            elif args.model_type == 'transformer':
+                model = Transformer(args)
+            config = model.config.__dict__
+            fabric.print(f"Model configuration {config}")
+            fabric.print(model.model)
         fabric.print(f"Time to instantiate model: {time.perf_counter() - t0:.02f} seconds.", file=sys.stderr)
 
         t0 = time.perf_counter()
@@ -76,7 +83,8 @@ class EvalHarnessBase(BaseLM):
 
         model.eval()
         self.model = fabric.setup_module(model)
-        self.tokenizer = Tokenizer(checkpoint_dir)
+        tokenizer_dir = 'meta-llama/Llama-2-7b-hf' if args.hf_dir is None else args.hf_dir
+        self.tokenizer = TokenizerHF(tokenizer_dir)
         self.vocab_size = self.tokenizer.vocab_size
 
     @classmethod
@@ -126,27 +134,27 @@ class EvalHarnessBase(BaseLM):
     def _model_generate(self, context, max_length, eos_token_id):
         assert context.shape[0] == 1
         out = generate(
-            model=self.model,
-            idx=context[0],
-            max_new_tokens=max_length,
-            max_seq_length=self.model.config.block_size,
-            temperature=self.temperature,
-            top_k=None,
-            eos_id=eos_token_id,
+                model=self.model,
+                idx=context[0],
+                max_new_tokens=max_length,
+                max_seq_length=self.model.config.block_size,
+                temperature=self.temperature,
+                top_k=None,
+                eos_id=eos_token_id,
         )
 
         return self.tokenizer.decode(out)
 
     @torch.no_grad()
     def run_eval(
-        self,
-        eval_tasks=None,
-        num_fewshot=0,
-        bootstrap_iters=2,
-        description_dict=None,
-        use_cache=True,
-        name="lit-gpt",
-        limit=None,
+            self,
+            eval_tasks=None,
+            num_fewshot=0,
+            bootstrap_iters=2,
+            description_dict=None,
+            use_cache=True,
+            name="lit-gpt",
+            limit=None,
     ):
         if eval_tasks is None:
             eval_tasks = ["arc_challenge", "piqa", "hellaswag", "hendrycksTest-*"]
@@ -180,12 +188,12 @@ class EvalHarnessBase(BaseLM):
             lm = base.CachingLM(lm, "lm_cache/" + name + ".db")
 
         results = evaluator.evaluate(
-            lm=lm,
-            task_dict=tasks.get_task_dict(eval_tasks),
-            description_dict=description_dict,
-            num_fewshot=num_fewshot,
-            limit=limit,
-            bootstrap_iters=bootstrap_iters,
+                lm=lm,
+                task_dict=tasks.get_task_dict(eval_tasks),
+                description_dict=description_dict,
+                num_fewshot=num_fewshot,
+                limit=limit,
+                bootstrap_iters=bootstrap_iters,
         )
 
         results["config"] = {
@@ -203,34 +211,34 @@ class EvalHarnessBase(BaseLM):
 
 
 def run_eval_harness(
-    checkpoint_dir: str = "",
-    precision: Optional[str] = None,
-    batch_size=1,
-    eval_tasks: Optional[List[str]] = None,
-    num_fewshot=0,
-    bootstrap_iters=2,
-    temperature=1.0,
-    device="auto",
-    devices: int = 1,
-    strategy: str = "auto",
-    quantize: Optional[Literal["bnb.nf4", "bnb.nf4-dq", "bnb.fp4", "bnb.fp4-dq", "bnb.int8", "gptq.int4"]] = None,
-    save_filepath: Optional[str] = None,
+        checkpoint_dir: str = "",
+        precision: Optional[str] = None,
+        batch_size=1,
+        eval_tasks: Optional[List[str]] = None,
+        num_fewshot=0,
+        bootstrap_iters=2,
+        temperature=1.0,
+        device="auto",
+        devices: int = 1,
+        strategy: str = "auto",
+        quantize: Optional[Literal["bnb.nf4", "bnb.nf4-dq", "bnb.fp4", "bnb.fp4-dq", "bnb.int8", "gptq.int4"]] = None,
+        save_filepath: Optional[str] = None,
 ):
     precision = precision or get_default_supported_precision(training=False)
 
     eval_harness = EvalHarnessBase(
-        checkpoint_dir=checkpoint_dir,
-        precision=precision,
-        batch_size=batch_size,
-        temperature=temperature,
-        device=device,
-        devices=devices,
-        strategy=strategy,
-        quantize=quantize,
+            checkpoint_dir=checkpoint_dir,
+            precision=precision,
+            batch_size=batch_size,
+            temperature=temperature,
+            device=device,
+            devices=devices,
+            strategy=strategy,
+            quantize=quantize,
     )
     eval_harness.fabric.print("Running evaluation harness...")
     results = eval_harness.run_eval(
-        eval_tasks=eval_tasks, num_fewshot=num_fewshot, bootstrap_iters=bootstrap_iters, use_cache=False
+            eval_tasks=eval_tasks, num_fewshot=num_fewshot, bootstrap_iters=bootstrap_iters, use_cache=False
     )
     if save_filepath:
         data = json.dumps(results)
@@ -240,14 +248,42 @@ def run_eval_harness(
     return results
 
 
+def add_inference_args(parser):
+    checkpoint_dir: str = "",
+    precision: Optional[str] = None,
+    batch_size = 1,
+    eval_tasks: Optional[List[str]] = None,
+    num_fewshot = 0,
+    bootstrap_iters = 2,
+    temperature = 1.0,
+    device = "auto",
+    devices: int = 1,
+    strategy: str = "auto",
+    quantize: Optional[Literal["bnb.nf4", "bnb.nf4-dq", "bnb.fp4", "bnb.fp4-dq", "bnb.int8", "gptq.int4"]] = None,
+    save_filepath: Optional[str] = None,
+
+    parser = ArgumentParser(parents=[parser], add_help=False)
+    parser.add_argument("--checkpoint_dir", type=str, default="")
+    parser.add_argument("--precision", type=str, default=None)
+    parser.add_argument("--batch_size", type=int, default=1)
+    parser.add_argument("--eval_tasks", type=str, nargs='+', default=[])
+    return parser
+
 if __name__ == "__main__":
-    from jsonargparse import CLI
+    # from jsonargparse import CLI
 
     torch.set_float32_matmul_precision("high")
     warnings.filterwarnings(
-        # Triggered internally at ../aten/src/ATen/EmptyTensor.cpp:31
-        "ignore",
-        message="ComplexHalf support is experimental and many operators don't support it yet",
+            # Triggered internally at ../aten/src/ATen/EmptyTensor.cpp:31
+            "ignore",
+            message="ComplexHalf support is experimental and many operators don't support it yet",
     )
-    result = CLI(run_eval_harness)
+    # result = CLI(run_eval_harness)
+
+    # training arguments
+    parser = arg_loader()
+    parser = add_inference_args(parser)
+    args = parser.parse_args()
+
+    result = run_eval_harness(args)
     print(result)
